@@ -51,10 +51,6 @@ Connect-AzAccount
 ## Start Remediation
 
 ```powershell
-# Optional but recommended: trigger policy evaluation first
-Set-AzContext -Subscription "<subscription-id>"
-Start-AzPolicyComplianceScan
-
 # Remediate at management group scope
 .\start-remediation.ps1 -ManagementGroupId "<management-group-id>"
 
