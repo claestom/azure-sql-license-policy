@@ -41,7 +41,12 @@ Connect-AzAccount
 
 # Assign at subscription scope (definition still created at management group)
 .\deployment.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>"
+
+# Optional: skip automatic RBAC assignment for the policy assignment identity
+.\deployment.ps1 -ManagementGroupId "<management-group-id>" -SkipManagedIdentityRoleAssignment
 ```
+
+`deployment.ps1` automatically grants required roles to the policy assignment managed identity at assignment scope, preventing common `PolicyAuthorizationFailed` errors during DeployIfNotExists deployments.
 
 ## Start Remediation
 
@@ -55,6 +60,9 @@ Start-AzPolicyComplianceScan
 
 # Remediate at subscription scope
 .\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>"
+
+# Optional: auto-grant missing permission before remediation
+.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -GrantMissingPermissions
 ```
 
 ## Managed Identity And Roles
@@ -65,3 +73,14 @@ Required roles:
 
 - `Azure Extension for SQL Server Deployment` (`7392c568-9289-4bde-aaaa-b7131215889d`)
 - `Reader` (`acdd72a7-3385-48ef-bd42-f606fba81ae7`)
+- `Resource Policy Contributor` (required so DeployIfNotExists can create template deployments)
+
+## Troubleshooting
+
+If you see `PolicyAuthorizationFailed`, the policy assignment identity is missing one or more required roles at assignment scope (or inherited scope), often causing missing `Microsoft.HybridCompute/machines/extensions/write` permission.
+
+Use one of these options:
+
+- Re-run `deployment.ps1` (default behavior assigns `Resource Policy Contributor` automatically).
+- Re-run `deployment.ps1` (default behavior assigns required roles automatically).
+- Run `start-remediation.ps1 -GrantMissingPermissions` (checks and assigns missing required roles before remediation).
