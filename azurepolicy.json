@@ -1,8 +1,8 @@
 {
-  "displayName": "License config - SA for Arc SQL Server - v3",
+  "displayName": "Set Arc-enabled SQL Server license type to 'License With Software Assurance'",
   "policyType": "Custom",
   "mode": "Indexed",
-  "description": "",
+  "description": "This policy sets the license type for Arc-enabled SQL Server to 'License With Software Assurance'.  ",
   "metadata": {
     "category": ""
   },
@@ -30,7 +30,7 @@
         },
         {
           "field": "name",
-          "like": "*/WindowsAgent.SqlServer"
+          "like": "WindowsAgent.SqlServer"
         },
         {
           "field": "Microsoft.HybridCompute/machines/extensions/type",
@@ -136,8 +136,5 @@
         }
       }
     }
-  },
-  "versions": [
-    "1.0.0"
-  ]
+  }
 }

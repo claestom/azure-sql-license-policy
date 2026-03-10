@@ -1,29 +1,67 @@
-# Automating Arc-enabled SQL Server software assurance benefits with Azure Policy
+# Arc SQL SA Policy
 
-Azure Arc allows users to onboard their hybrid resources into Azure, such as Linus/Windows servers or SQL Servers. The onboarding can happen regardless where the resources are hosted: on-premises, multi-cloud or edge devices. 
+This repo deploys and remediates a custom Azure Policy that sets Arc-enabled SQL Server extension `LicenseType` to `Paid` (Software Assurance/Azure benefit).
 
-The main benefit of onboarding resources into Azure Arc are the management capabilities from the Azure cloud that will become available: Azure Portal as the control plane, Azure Monitor, Azure Policy, Defender for Cloud... For customers that have software assurance enabled on their Windows Servers and/or SQL Servers, some additonal benefits are available. 
+## What Is In This Repo
 
-These being some paid services that become available at no additional cost, e.g., Azure Update Manager (priced at 5$/instance/month, but for SA customers available at no additional cost). Next to the waiving of some licensing fees for services, also additional features become available that are exclusively available to customers with software assurnace, such as: Best Practice Assessment or Remote Support.
+- `azurepolicy.json`: Custom policy definition (DeployIfNotExists).
+- `deployment.ps1`: Creates/updates the policy definition and policy assignment.
+- `start-remediation.ps1`: Starts a remediation task for the created assignment.
+- `example/`: Example assets.
+- `screenshots/`: Visual references.
 
-## How to enable these benefits at scale using Azure Policy?
+## Prerequisites
 
-To activate the benefits, you need to attest in the Azure Portal that your Windows Servers and/or SQL Servers are covered by software assurance.
+- PowerShell with Az modules installed (`Az.Resources`).
+- Logged in to Azure (`Connect-AzAccount`).
+- Permissions to create policy definitions/assignments and remediation tasks at target scope.
 
-Today we will focus on how to do this using Azure Policy. Other options are manual enablement via the Azure Portal UI or using Powershell scripting. In this article, written by <name> it is explained how to do this for the Windows Server part, which triggered the inspiration to replicate this to the SQL Server part as well.
+## Deploy Policy
 
-## How to deploy the policy?
+`ManagementGroupId` is required. `SubscriptionId` is optional.
 
-The deployment itself will consist of 2 parts:
+Definition and assignment creation:
 
-* Creating the Azure Policy definition and the Policy assignment
-* Creating the remediaton task to make sure existing Arc-enabled SQL Servers are compliant as well
+1. Download the files.
 
-### Definition and assingment creation
+```powershell
+git clone https://github.com/claestom/sa-sql-arc-policy
+cd sa-sql-arc-policy
+```
 
-...
+2. Login to Azure.
 
-### Remediation task creation
+```powershell
+Connect-AzAccount
+```
 
+```powershell
+# Assign at management group scope
+.\deployment.ps1 -ManagementGroupId "<management-group-id>"
 
+# Assign at subscription scope (definition still created at management group)
+.\deployment.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>"
+```
 
+## Start Remediation
+
+```powershell
+# Optional but recommended: trigger policy evaluation first
+Set-AzContext -Subscription "<subscription-id>"
+Start-AzPolicyComplianceScan
+
+# Remediate at management group scope
+.\start-remediation.ps1 -ManagementGroupId "<management-group-id>"
+
+# Remediate at subscription scope
+.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>"
+```
+
+## Managed Identity And Roles
+
+The policy assignment is created with `-IdentityType SystemAssigned`. Azure creates a managed identity on the assignment and uses it to apply DeployIfNotExists changes during enforcement and remediation.
+
+Required roles:
+
+- `Azure Extension for SQL Server Deployment` (`7392c568-9289-4bde-aaaa-b7131215889d`)
+- `Reader` (`acdd72a7-3385-48ef-bd42-f606fba81ae7`)
