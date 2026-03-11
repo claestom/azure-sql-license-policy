@@ -70,6 +70,9 @@ Connect-AzAccount
 # Remediate at management group scope (Linux assignment)
 .\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux"
 
+# Remediate at management group scope (Linux PAYG assignment)
+.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "PAYG"
+
 # Remediate at subscription scope
 .\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>" -ExtensionType "Windows"
 

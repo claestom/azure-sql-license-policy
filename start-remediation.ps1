@@ -8,6 +8,10 @@ param(
   [string]$ExtensionType,
 
   [Parameter(Mandatory = $false)]
+  [ValidateSet('Paid', 'PAYG')]
+  [string]$TargetLicenseType = 'Paid',
+
+  [Parameter(Mandatory = $false)]
   [ValidateNotNullOrEmpty()]
   [string]$SubscriptionId,
 
@@ -34,13 +38,14 @@ if ($PSBoundParameters.ContainsKey('SubscriptionId')) {
 }
 
 $PlatformToken = $ExtensionType.ToLowerInvariant()
+$LicenseToken = if ($TargetLicenseType -eq 'PAYG') { 'payg' } else { 'sa' }
 
 if (-not $PSBoundParameters.ContainsKey('PolicyAssignmentName')) {
-  $PolicyAssignmentName = "sql-arc-sa-$PlatformToken"
+  $PolicyAssignmentName = "sql-arc-$LicenseToken-$PlatformToken"
 }
 
 if (-not $PSBoundParameters.ContainsKey('RemediationName')) {
-  $RemediationName = "remediate-sql-arc-sa-$PlatformToken"
+  $RemediationName = "remediate-sql-arc-$LicenseToken-$PlatformToken"
 }
 
 if (-not $PSBoundParameters.ContainsKey('ResourceDiscoveryMode')) {

@@ -33,10 +33,19 @@ else {
 }
 
 $PlatformToken = $ExtensionType.ToLowerInvariant()
-$PolicyDefinitionName = "activate-sql-arc-sa-$PlatformToken"
-$PolicyAssignmentName = "sql-arc-sa-$PlatformToken"
-$PolicyDefinitionDisplayName = "Set Arc-enabled SQL Server ($ExtensionType) license type to 'License With Software Assurance'"
-$PolicyAssignmentDisplayName = "Set Arc-enabled SQL Server ($ExtensionType) license type to 'License With Software Assurance'"
+$LicenseToken = if ($TargetLicenseType -eq 'PAYG') { 'payg' } else { 'sa' }
+
+$PolicyDefinitionName = "activate-sql-arc-$LicenseToken-$PlatformToken"
+$PolicyAssignmentName = "sql-arc-$LicenseToken-$PlatformToken"
+
+if ($TargetLicenseType -eq 'PAYG') {
+  $PolicyDefinitionDisplayName = "Arc-enabled SQL Server (ExtensionType: $ExtensionType) license type to 'Pay-as-you-go'"
+  $PolicyAssignmentDisplayName = "Arc-enabled SQL Server (ExtensionType: $ExtensionType) license type to 'Pay-as-you-go'"
+}
+else {
+  $PolicyDefinitionDisplayName = "Set Arc-enabled SQL Server (ExtensionType: $ExtensionType) license type to 'License With Software Assurance'"
+  $PolicyAssignmentDisplayName = "Set Arc-enabled SQL Server (ExtensionType: $ExtensionType) license type to 'License With Software Assurance'"
+}
 
 #Create policy definition
 New-AzPolicyDefinition `
