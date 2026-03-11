@@ -20,10 +20,17 @@ This repo deploys and remediates a custom Azure Policy that sets Arc-enabled SQL
 
 `ManagementGroupId` and `ExtensionType` are required. `SubscriptionId` is optional.
 
+`TargetLicenseType` is optional (default: `Paid`).
+
 `ExtensionType` supported values:
 
 - `Windows`
 - `Linux`
+
+`TargetLicenseType` supported values:
+
+- `Paid`
+- `PAYG`
 
 Definition and assignment creation:
 
@@ -43,6 +50,9 @@ Connect-AzAccount
 ```powershell
 # Assign at management group scope targeting Linux or Windows Arc SQL extension
 .\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "<Linux or Windows>"
+
+# Assign at management group scope and set target license type to PAYG
+.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "<Linux or Windows>" -TargetLicenseType "PAYG"
 
 # Assign at subscription scope (definition still created at management group) targeting Linux or Windows Arc SQL extension
 .\deployment.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>" -ExtensionType "<Linux or Windows>" 
