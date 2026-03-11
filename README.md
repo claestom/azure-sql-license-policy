@@ -1,4 +1,4 @@
-# Arc SQL SA Policy
+# Arc-enabled SQL Server Software Assurance benefits with Azure Policy
 
 This repo deploys and remediates a custom Azure Policy that sets Arc-enabled SQL Server extension `LicenseType` to `Paid` (Software Assurance/Azure benefit).
 
@@ -20,6 +20,11 @@ This repo deploys and remediates a custom Azure Policy that sets Arc-enabled SQL
 
 `ManagementGroupId` is required. `SubscriptionId` is optional.
 
+`SqlServerExtensionType` is optional with supported values:
+
+- `WindowsAgent.SqlServer` (default)
+- `LinuxAgent.SqlServer`
+
 Definition and assignment creation:
 
 1. Download the files.
@@ -38,6 +43,9 @@ Connect-AzAccount
 ```powershell
 # Assign at management group scope
 .\deployment.ps1 -ManagementGroupId "<management-group-id>"
+
+# Assign at management group scope targeting Linux Arc SQL extension
+.\deployment.ps1 -ManagementGroupId "<management-group-id>" -SqlServerExtensionType "LinuxAgent.SqlServer"
 
 # Assign at subscription scope (definition still created at management group)
 .\deployment.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>"

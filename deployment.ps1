@@ -8,6 +8,10 @@ param(
   [string]$SubscriptionId,
 
   [Parameter(Mandatory = $false)]
+  [ValidateSet('WindowsAgent.SqlServer', 'LinuxAgent.SqlServer')]
+  [string]$SqlServerExtensionType = 'WindowsAgent.SqlServer',
+
+  [Parameter(Mandatory = $false)]
   [switch]$SkipManagedIdentityRoleAssignment
 )
 
@@ -33,6 +37,9 @@ $PolicyAssignment = New-AzPolicyAssignment `
   -Name $PolicyAssignmentName `
   -DisplayName "Set Arc-enabled SQL Server license type to 'License With Software Assurance'" `
   -PolicyDefinition $Policy `
+  -PolicyParameterObject @{
+    sqlServerExtensionType = @{ value = $SqlServerExtensionType }
+  } `
   -Scope $AssignmentScope `
   -Location 'westeurope' `
   -IdentityType 'SystemAssigned'
