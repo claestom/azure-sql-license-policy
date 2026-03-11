@@ -3,17 +3,25 @@ param(
   [ValidateNotNullOrEmpty()]
   [string]$ManagementGroupId,
 
+  [Parameter(Mandatory = $true)]
+  [ValidateSet('Windows', 'Linux')]
+  [string]$ExtensionType,
+
+  [Parameter(Mandatory = $false)]
+  [ValidateSet('Paid', 'PAYG')]
+  [string]$TargetLicenseType = 'Paid',
+
   [Parameter(Mandatory = $false)]
   [ValidateNotNullOrEmpty()]
   [string]$SubscriptionId,
 
   [Parameter(Mandatory = $false)]
   [ValidateNotNullOrEmpty()]
-  [string]$PolicyAssignmentName = "sql-arc-sa-license",
+  [string]$PolicyAssignmentName,
 
   [Parameter(Mandatory = $false)]
   [ValidateNotNullOrEmpty()]
-  [string]$RemediationName = "remediate-sql-arc-sa-license",
+  [string]$RemediationName,
 
   [Parameter(Mandatory = $false)]
   [ValidateSet('ExistingNonCompliant', 'ReEvaluateCompliance')]
@@ -27,6 +35,17 @@ $AssignmentScope = "/providers/Microsoft.Management/managementGroups/$Management
 
 if ($PSBoundParameters.ContainsKey('SubscriptionId')) {
   $AssignmentScope = "/subscriptions/$SubscriptionId"
+}
+
+$PlatformToken = $ExtensionType.ToLowerInvariant()
+$LicenseToken = if ($TargetLicenseType -eq 'PAYG') { 'payg' } else { 'sa' }
+
+if (-not $PSBoundParameters.ContainsKey('PolicyAssignmentName')) {
+  $PolicyAssignmentName = "sql-arc-$LicenseToken-$PlatformToken"
+}
+
+if (-not $PSBoundParameters.ContainsKey('RemediationName')) {
+  $RemediationName = "remediate-sql-arc-$LicenseToken-$PlatformToken"
 }
 
 if (-not $PSBoundParameters.ContainsKey('ResourceDiscoveryMode')) {

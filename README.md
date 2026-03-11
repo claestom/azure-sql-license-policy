@@ -64,14 +64,20 @@ Connect-AzAccount
 ## Start Remediation
 
 ```powershell
-# Remediate at management group scope
-.\start-remediation.ps1 -ManagementGroupId "<management-group-id>"
+# Remediate at management group scope (Windows assignment)
+.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Windows"
+
+# Remediate at management group scope (Linux assignment)
+.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux"
+
+# Remediate at management group scope (Linux PAYG assignment)
+.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "PAYG"
 
 # Remediate at subscription scope
-.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>"
+.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>" -ExtensionType "Windows"
 
 # Optional: auto-grant missing permission before remediation
-.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -GrantMissingPermissions
+.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Windows" -GrantMissingPermissions
 ```
 
 ## Managed Identity And Roles
