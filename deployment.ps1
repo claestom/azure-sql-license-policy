@@ -19,8 +19,6 @@ param(
   [switch]$SkipManagedIdentityRoleAssignment
 )
 
-$PolicyDefinitionName = "activate-azure-benefits-for-sql-arc-servers"
-$PolicyAssignmentName = "sql-arc-sa-license"
 $AssignmentScope = "/providers/Microsoft.Management/managementGroups/$ManagementGroupId"
 
 if ($PSBoundParameters.ContainsKey('SubscriptionId')) {
@@ -34,10 +32,16 @@ else {
   'WindowsAgent.SqlServer'
 }
 
+$PlatformToken = $ExtensionType.ToLowerInvariant()
+$PolicyDefinitionName = "activate-sql-arc-sa-$PlatformToken"
+$PolicyAssignmentName = "sql-arc-sa-$PlatformToken"
+$PolicyDefinitionDisplayName = "Set Arc-enabled SQL Server ($ExtensionType) license type to 'License With Software Assurance'"
+$PolicyAssignmentDisplayName = "Set Arc-enabled SQL Server ($ExtensionType) license type to 'License With Software Assurance'"
+
 #Create policy definition
 New-AzPolicyDefinition `
   -Name $PolicyDefinitionName `
-  -DisplayName "Set Arc-enabled SQL Server license type to 'License With Software Assurance'" `
+  -DisplayName $PolicyDefinitionDisplayName `
   -Policy 'azurepolicy.json' `
   -ManagementGroupName $ManagementGroupId `
   -Mode Indexed `
@@ -47,7 +51,7 @@ New-AzPolicyDefinition `
 $Policy = Get-AzPolicyDefinition -Name $PolicyDefinitionName -ManagementGroupName $ManagementGroupId
 $PolicyAssignment = New-AzPolicyAssignment `
   -Name $PolicyAssignmentName `
-  -DisplayName "Set Arc-enabled SQL Server license type to 'License With Software Assurance'" `
+  -DisplayName $PolicyAssignmentDisplayName `
   -PolicyDefinition $Policy `
   -PolicyParameterObject @{
     sqlServerExtensionType = $SqlServerExtensionType
