@@ -12,6 +12,10 @@ param(
   [string]$ExtensionType,
 
   [Parameter(Mandatory = $false)]
+  [ValidateSet('Paid', 'PAYG')]
+  [string]$TargetLicenseType = 'Paid',
+
+  [Parameter(Mandatory = $false)]
   [switch]$SkipManagedIdentityRoleAssignment
 )
 
@@ -47,6 +51,7 @@ $PolicyAssignment = New-AzPolicyAssignment `
   -PolicyDefinition $Policy `
   -PolicyParameterObject @{
     sqlServerExtensionType = $SqlServerExtensionType
+    targetLicenseType = $TargetLicenseType
   } `
   -Scope $AssignmentScope `
   -Location 'westeurope' `

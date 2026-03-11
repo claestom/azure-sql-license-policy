@@ -31,6 +31,18 @@
         "LinuxAgent.SqlServer"
       ],
       "defaultValue": "WindowsAgent.SqlServer"
+    },
+    "targetLicenseType": {
+      "type": "String",
+      "metadata": {
+        "displayName": "Target license type",
+        "description": "LicenseType value to enforce on the Arc-enabled SQL Server extension settings."
+      },
+      "allowedValues": [
+        "Paid",
+        "PAYG"
+      ],
+      "defaultValue": "Paid"
     }
   },
   "policyRule": {
@@ -78,7 +90,7 @@
               "ContainsKey": "LicenseType"
             },
             {
-              "value": "[length(intersection(field('Microsoft.HybridCompute/machines/extensions/settings'), createObject('LicenseType', 'Paid')))]",
+              "value": "[length(intersection(field('Microsoft.HybridCompute/machines/extensions/settings'), createObject('LicenseType', parameters('targetLicenseType'))))]",
               "equals": 1
             }
           ]
@@ -114,13 +126,19 @@
                   "metadata": {
                     "description": "The existing settings on the extension."
                   }
+                },
+                "targetLicenseType": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "LicenseType value to set on the extension."
+                  }
                 }
               },
               "functions": [],
               "variables": {
                 "vmExtensionPublisher": "Microsoft.AzureData",
                 "licenseSettings": {
-                  "LicenseType": "Paid"
+                  "LicenseType": "[parameters('targetLicenseType')]"
                 }
               },
               "resources": [
@@ -150,6 +168,9 @@
               },
               "existingSettings": {
                 "value": "[field('Microsoft.HybridCompute/machines/extensions/settings')]"
+                },
+                "targetLicenseType": {
+                  "value": "[parameters('targetLicenseType')]"
               }
             }
           }
