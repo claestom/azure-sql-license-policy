@@ -7,6 +7,10 @@ param(
   [ValidateNotNullOrEmpty()]
   [string]$SubscriptionId,
 
+  [Parameter(Mandatory = $true)]
+  [ValidateSet('Windows', 'Linux')]
+  [string]$ExtensionType,
+
   [Parameter(Mandatory = $false)]
   [switch]$SkipManagedIdentityRoleAssignment
 )
@@ -19,13 +23,21 @@ if ($PSBoundParameters.ContainsKey('SubscriptionId')) {
   $AssignmentScope = "/subscriptions/$SubscriptionId"
 }
 
+$SqlServerExtensionType = if ($ExtensionType -eq 'Linux') {
+  'LinuxAgent.SqlServer'
+}
+else {
+  'WindowsAgent.SqlServer'
+}
+
 #Create policy definition
 New-AzPolicyDefinition `
   -Name $PolicyDefinitionName `
   -DisplayName "Set Arc-enabled SQL Server license type to 'License With Software Assurance'" `
   -Policy 'azurepolicy.json' `
   -ManagementGroupName $ManagementGroupId `
-  -Mode Indexed
+  -Mode Indexed `
+  -ErrorAction Stop
 
 #Assign policy definition
 $Policy = Get-AzPolicyDefinition -Name $PolicyDefinitionName -ManagementGroupName $ManagementGroupId
@@ -33,9 +45,13 @@ $PolicyAssignment = New-AzPolicyAssignment `
   -Name $PolicyAssignmentName `
   -DisplayName "Set Arc-enabled SQL Server license type to 'License With Software Assurance'" `
   -PolicyDefinition $Policy `
+  -PolicyParameterObject @{
+    sqlServerExtensionType = $SqlServerExtensionType
+  } `
   -Scope $AssignmentScope `
   -Location 'westeurope' `
-  -IdentityType 'SystemAssigned'
+  -IdentityType 'SystemAssigned' `
+  -ErrorAction Stop
 
 if (-not $SkipManagedIdentityRoleAssignment) {
   $requiredRoleNames = @(

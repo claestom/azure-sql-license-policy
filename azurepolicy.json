@@ -19,6 +19,18 @@
         "Disabled"
       ],
       "defaultValue": "DeployIfNotExists"
+    },
+    "sqlServerExtensionType": {
+      "type": "String",
+      "metadata": {
+        "displayName": "SQL Server extension type",
+        "description": "Arc-enabled SQL Server extension name to target."
+      },
+      "allowedValues": [
+        "WindowsAgent.SqlServer",
+        "LinuxAgent.SqlServer"
+      ],
+      "defaultValue": "WindowsAgent.SqlServer"
     }
   },
   "policyRule": {
@@ -29,12 +41,20 @@
           "equals": "Microsoft.HybridCompute/machines/extensions"
         },
         {
-          "field": "name",
-          "like": "WindowsAgent.SqlServer"
+          "anyOf": [
+            {
+              "field": "name",
+              "equals": "[parameters('sqlServerExtensionType')]"
+            },
+            {
+              "field": "name",
+              "like": "[concat('*/', parameters('sqlServerExtensionType'))]"
+            }
+          ]
         },
         {
           "field": "Microsoft.HybridCompute/machines/extensions/type",
-          "equals": "WindowsAgent.SqlServer"
+          "equals": "[parameters('sqlServerExtensionType')]"
         }
       ]
     },
