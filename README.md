@@ -18,12 +18,12 @@ This repo deploys and remediates a custom Azure Policy that sets Arc-enabled SQL
 
 ## Deploy Policy
 
-`ManagementGroupId` is required. `SubscriptionId` is optional.
+`ManagementGroupId` and `ExtensionType` are required. `SubscriptionId` is optional.
 
-`SqlServerExtensionType` is optional with supported values:
+`ExtensionType` supported values:
 
-- `WindowsAgent.SqlServer` (default)
-- `LinuxAgent.SqlServer`
+- `Windows`
+- `Linux`
 
 Definition and assignment creation:
 
@@ -41,17 +41,12 @@ Connect-AzAccount
 ```
 
 ```powershell
-# Assign at management group scope
-.\deployment.ps1 -ManagementGroupId "<management-group-id>"
+# Assign at management group scope targeting Linux or Windows Arc SQL extension
+.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "<Linux or Windows>"
 
-# Assign at management group scope targeting Linux Arc SQL extension
-.\deployment.ps1 -ManagementGroupId "<management-group-id>" -SqlServerExtensionType "LinuxAgent.SqlServer"
+# Assign at subscription scope (definition still created at management group) targeting Linux or Windows Arc SQL extension
+.\deployment.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>" -ExtensionType "<Linux or Windows>" 
 
-# Assign at subscription scope (definition still created at management group)
-.\deployment.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>"
-
-# Optional: skip automatic RBAC assignment for the policy assignment identity
-.\deployment.ps1 -ManagementGroupId "<management-group-id>" -SkipManagedIdentityRoleAssignment
 ```
 
 `deployment.ps1` automatically grants required roles to the policy assignment managed identity at assignment scope, preventing common `PolicyAuthorizationFailed` errors during DeployIfNotExists deployments.
