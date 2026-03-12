@@ -18,26 +18,15 @@ This repo deploys and remediates a custom Azure Policy that sets Arc-enabled SQL
 
 ## Deploy Policy
 
-`ManagementGroupId` and `ExtensionType` are required. `SubscriptionId` is optional.
+Parameter reference:
 
-`TargetLicenseType` is optional (default: `Paid`).
-
-`OverwriteExistingLicenseType` is optional (default: `true`).
-
-`ExtensionType` supported values:
-
-- `Windows`
-- `Linux`
-
-`TargetLicenseType` supported values:
-
-- `Paid`
-- `PAYG`
-
-`OverwriteExistingLicenseType` behavior:
-
-- `true`: overwrite existing non-target `LicenseType` values.
-- `false`: only apply policy when `LicenseType` is missing.
+| Parameter | Required | Default | Allowed values | Description |
+|---|---|---|---|---|
+| `ManagementGroupId` | Yes | N/A | Any valid management group ID | Scope where the policy definition is created. |
+| `ExtensionType` | Yes | N/A | `Windows`, `Linux` | Targets the Arc SQL extension platform. |
+| `SubscriptionId` | No | Not set | Any valid subscription ID | If provided, policy assignment scope is the subscription. |
+| `TargetLicenseType` | No | `Paid` | `Paid`, `PAYG` | Target `LicenseType` value to enforce. |
+| `OverwriteExistingLicenseType` | No | `true` | `$true`, `$false` | `$true` overwrites non-target values; `$false` only sets when missing. |
 
 Definition and assignment creation:
 
@@ -55,39 +44,33 @@ Connect-AzAccount
 ```
 
 ```powershell
-# Assign at management group scope targeting Linux or Windows Arc SQL extension
-.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "<Linux or Windows>"
-
-# Assign at management group scope and set target license type to PAYG
-.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "<Linux or Windows>" -TargetLicenseType "PAYG"
-
-# Assign at management group scope, do not overwrite existing LicenseType values
-.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "<Linux or Windows>" -OverwriteExistingLicenseType $false
-
-# Assign at subscription scope (definition still created at management group) targeting Linux or Windows Arc SQL extension
-.\deployment.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>" -ExtensionType "<Linux or Windows>" 
-
+# Example (includes all parameters)
+.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -OverwriteExistingLicenseType $true
 ```
+The above example commmand will:
+* Create/update the policy definition at the management group.
+* Assign that policy at the specified subscription scope.
+* Target SQL Server instances running on Linux OS
+* Enforce LicenseType = PAYG.
+* With $true, overwrite existing non-PAYG license values.
 
-`deployment.ps1` automatically grants required roles to the policy assignment managed identity at assignment scope, preventing common `PolicyAuthorizationFailed` errors during DeployIfNotExists deployments.
+Note: `deployment.ps1` automatically grants required roles to the policy assignment managed identity at assignment scope, preventing common `PolicyAuthorizationFailed` errors during DeployIfNotExists deployments.
 
 ## Start Remediation
 
+Parameter reference:
+
+| Parameter | Required | Default | Allowed values | Description |
+|---|---|---|---|---|
+| `ManagementGroupId` | Yes | N/A | Any valid management group ID | Used to resolve the policy definition/assignment naming context. |
+| `ExtensionType` | Yes | N/A | `Windows`, `Linux` | Must match the platform used for the assignment. |
+| `SubscriptionId` | No | Not set | Any valid subscription ID | If provided, remediation runs at subscription scope. |
+| `TargetLicenseType` | No | `Paid` | `Paid`, `PAYG` | Must match the assignment target license type. |
+| `GrantMissingPermissions` | No | `false` | Switch (`present`/`not present`) | If set, checks and assigns missing required roles before remediation. |
+
 ```powershell
-# Remediate at management group scope (Windows assignment)
-.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Windows"
-
-# Remediate at management group scope (Linux assignment)
-.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux"
-
-# Remediate at management group scope (Linux PAYG assignment)
-.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "PAYG"
-
-# Remediate at subscription scope
-.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>" -ExtensionType "Windows"
-
-# Optional: auto-grant missing permission before remediation
-.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Windows" -GrantMissingPermissions
+# Example (includes all parameters)
+.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -GrantMissingPermissions
 ```
 
 ## Managed Identity And Roles
