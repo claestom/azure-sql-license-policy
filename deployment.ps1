@@ -16,6 +16,9 @@ param(
   [string]$TargetLicenseType = 'Paid',
 
   [Parameter(Mandatory = $false)]
+  [bool]$OverwriteExistingLicenseType = $true,
+
+  [Parameter(Mandatory = $false)]
   [switch]$SkipManagedIdentityRoleAssignment
 )
 
@@ -65,6 +68,7 @@ $PolicyAssignment = New-AzPolicyAssignment `
   -PolicyParameterObject @{
     sqlServerExtensionType = $SqlServerExtensionType
     targetLicenseType = $TargetLicenseType
+    overwriteExistingLicenseType = $OverwriteExistingLicenseType
   } `
   -Scope $AssignmentScope `
   -Location 'westeurope' `

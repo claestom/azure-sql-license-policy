@@ -22,6 +22,8 @@ This repo deploys and remediates a custom Azure Policy that sets Arc-enabled SQL
 
 `TargetLicenseType` is optional (default: `Paid`).
 
+`OverwriteExistingLicenseType` is optional (default: `true`).
+
 `ExtensionType` supported values:
 
 - `Windows`
@@ -31,6 +33,11 @@ This repo deploys and remediates a custom Azure Policy that sets Arc-enabled SQL
 
 - `Paid`
 - `PAYG`
+
+`OverwriteExistingLicenseType` behavior:
+
+- `true`: overwrite existing non-target `LicenseType` values.
+- `false`: only apply policy when `LicenseType` is missing.
 
 Definition and assignment creation:
 
@@ -53,6 +60,9 @@ Connect-AzAccount
 
 # Assign at management group scope and set target license type to PAYG
 .\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "<Linux or Windows>" -TargetLicenseType "PAYG"
+
+# Assign at management group scope, do not overwrite existing LicenseType values
+.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "<Linux or Windows>" -OverwriteExistingLicenseType $false
 
 # Assign at subscription scope (definition still created at management group) targeting Linux or Windows Arc SQL extension
 .\deployment.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>" -ExtensionType "<Linux or Windows>" 

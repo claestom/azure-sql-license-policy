@@ -43,6 +43,14 @@
         "PAYG"
       ],
       "defaultValue": "Paid"
+    },
+    "overwriteExistingLicenseType": {
+      "type": "Boolean",
+      "metadata": {
+        "displayName": "Overwrite existing LicenseType",
+        "description": "When true, existing non-target LicenseType values are overwritten. When false, policy applies only if LicenseType is missing."
+      },
+      "defaultValue": true
     }
   },
   "policyRule": {
@@ -80,18 +88,34 @@
         ],
         "name": "[field('fullName')]",
         "existenceCondition": {
-          "allOf": [
+          "anyOf": [
             {
-              "field": "Microsoft.HybridCompute/machines/extensions/settings",
-              "exists": "true"
+              "allOf": [
+                {
+                  "value": "[parameters('overwriteExistingLicenseType')]",
+                  "equals": false
+                },
+                {
+                  "field": "Microsoft.HybridCompute/machines/extensions/settings",
+                  "ContainsKey": "LicenseType"
+                }
+              ]
             },
             {
-              "field": "Microsoft.HybridCompute/machines/extensions/settings",
-              "ContainsKey": "LicenseType"
-            },
-            {
-              "value": "[length(intersection(field('Microsoft.HybridCompute/machines/extensions/settings'), createObject('LicenseType', parameters('targetLicenseType'))))]",
-              "equals": 1
+              "allOf": [
+                {
+                  "value": "[parameters('overwriteExistingLicenseType')]",
+                  "equals": true
+                },
+                {
+                  "field": "Microsoft.HybridCompute/machines/extensions/settings",
+                  "ContainsKey": "LicenseType"
+                },
+                {
+                  "value": "[length(intersection(field('Microsoft.HybridCompute/machines/extensions/settings'), createObject('LicenseType', parameters('targetLicenseType'))))]",
+                  "equals": 1
+                }
+              ]
             }
           ]
         },
