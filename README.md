@@ -1,4 +1,4 @@
-# Arc-enabled SQL Server license type configuration with Azure Policy
+# Arc-enabled SQL Server Software Assurance benefits with Azure Policy
 
 This repo deploys and remediates a custom Azure Policy that sets Arc-enabled SQL Server extension `LicenseType` to `Paid` (Software Assurance/Azure benefit).
 
@@ -27,7 +27,6 @@ Parameter reference:
 | `SubscriptionId` | No | Not set | Any valid subscription ID | If provided, policy assignment scope is the subscription. |
 | `TargetLicenseType` | No | `Paid` | `Paid`, `PAYG` | Target `LicenseType` value to enforce. |
 | `OverwriteExistingLicenseType` | No | `true` | `$true`, `$false` | `$true` overwrites non-target values; `$false` only sets when missing. |
-| `ExcludeAlreadyPayg` | No | `false` | `$true`, `$false` | When `$true`, resources already set to `PAYG` are excluded from updates, regardless of other parameter settings. |
 
 Definition and assignment creation:
 
@@ -46,7 +45,7 @@ Connect-AzAccount
 
 ```powershell
 # Example (includes all parameters)
-.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -OverwriteExistingLicenseType $true -ExcludeAlreadyPayg $false
+.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -OverwriteExistingLicenseType $true
 ```
 The above example commmand will:
 * Create/update the policy definition at the management group.
@@ -54,7 +53,6 @@ The above example commmand will:
 * Target SQL Server instances running on Linux OS
 * Enforce LicenseType = PAYG.
 * With $true, overwrite existing non-PAYG license values.
-* With `-ExcludeAlreadyPayg $true`, resources already set to PAYG will not be changed.
 
 Note: `deployment.ps1` automatically grants required roles to the policy assignment managed identity at assignment scope, preventing common `PolicyAuthorizationFailed` errors during DeployIfNotExists deployments.
 

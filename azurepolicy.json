@@ -51,14 +51,6 @@
         "description": "When true, existing non-target LicenseType values are overwritten. When false, policy applies only if LicenseType is missing."
       },
       "defaultValue": true
-    },
-    "excludeAlreadyPayg": {
-      "type": "Boolean",
-      "metadata": {
-        "displayName": "Exclude already PAYG",
-        "description": "When true, resources already configured with LicenseType = PAYG are excluded from updates."
-      },
-      "defaultValue": false
     }
   },
   "policyRule": {
@@ -97,22 +89,6 @@
         "name": "[field('fullName')]",
         "existenceCondition": {
           "anyOf": [
-            {
-              "allOf": [
-                {
-                  "value": "[parameters('excludeAlreadyPayg')]",
-                  "equals": true
-                },
-                {
-                  "field": "Microsoft.HybridCompute/machines/extensions/settings",
-                  "ContainsKey": "LicenseType"
-                },
-                {
-                  "value": "[length(intersection(field('Microsoft.HybridCompute/machines/extensions/settings'), createObject('LicenseType', 'PAYG')))]",
-                  "equals": 1
-                }
-              ]
-            },
             {
               "allOf": [
                 {

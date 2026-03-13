@@ -19,9 +19,6 @@ param(
   [bool]$OverwriteExistingLicenseType = $true,
 
   [Parameter(Mandatory = $false)]
-  [bool]$ExcludeAlreadyPayg = $false,
-
-  [Parameter(Mandatory = $false)]
   [switch]$SkipManagedIdentityRoleAssignment
 )
 
@@ -72,7 +69,6 @@ $PolicyAssignment = New-AzPolicyAssignment `
     sqlServerExtensionType = $SqlServerExtensionType
     targetLicenseType = $TargetLicenseType
     overwriteExistingLicenseType = $OverwriteExistingLicenseType
-    excludeAlreadyPayg = $ExcludeAlreadyPayg
   } `
   -Scope $AssignmentScope `
   -Location 'westeurope' `
