@@ -44,13 +44,24 @@
       ],
       "defaultValue": "Paid"
     },
-    "overwriteExistingLicenseType": {
-      "type": "Boolean",
+    "licenseTypesToOverwrite": {
+      "type": "Array",
       "metadata": {
-        "displayName": "Overwrite existing LicenseType",
-        "description": "When true, existing non-target LicenseType values are overwritten. When false, policy applies only if LicenseType is missing."
+        "displayName": "Current license types to overwrite",
+        "description": "Select which current LicenseType states are eligible for update. Use 'Unspecified' to include resources where LicenseType is missing."
       },
-      "defaultValue": true
+      "allowedValues": [
+        "Unspecified",
+        "Paid",
+        "PAYG",
+        "LicenseOnly"
+      ],
+      "defaultValue": [
+        "Unspecified",
+        "Paid",
+        "PAYG",
+        "LicenseOnly"
+      ]
     }
   },
   "policyRule": {
@@ -92,28 +103,72 @@
             {
               "allOf": [
                 {
-                  "value": "[parameters('overwriteExistingLicenseType')]",
-                  "equals": false
-                },
-                {
-                  "field": "Microsoft.HybridCompute/machines/extensions/settings",
-                  "ContainsKey": "LicenseType"
-                }
-              ]
-            },
-            {
-              "allOf": [
-                {
-                  "value": "[parameters('overwriteExistingLicenseType')]",
-                  "equals": true
-                },
-                {
                   "field": "Microsoft.HybridCompute/machines/extensions/settings",
                   "ContainsKey": "LicenseType"
                 },
                 {
                   "value": "[length(intersection(field('Microsoft.HybridCompute/machines/extensions/settings'), createObject('LicenseType', parameters('targetLicenseType'))))]",
                   "equals": 1
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "field": "Microsoft.HybridCompute/machines/extensions/settings",
+                  "notContainsKey": "LicenseType"
+                },
+                {
+                  "value": "[contains(parameters('licenseTypesToOverwrite'), 'Unspecified')]",
+                  "equals": false
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "field": "Microsoft.HybridCompute/machines/extensions/settings",
+                  "ContainsKey": "LicenseType"
+                },
+                {
+                  "value": "[length(intersection(field('Microsoft.HybridCompute/machines/extensions/settings'), createObject('LicenseType', 'Paid')))]",
+                  "equals": 1
+                },
+                {
+                  "value": "[contains(parameters('licenseTypesToOverwrite'), 'Paid')]",
+                  "equals": false
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "field": "Microsoft.HybridCompute/machines/extensions/settings",
+                  "ContainsKey": "LicenseType"
+                },
+                {
+                  "value": "[length(intersection(field('Microsoft.HybridCompute/machines/extensions/settings'), createObject('LicenseType', 'PAYG')))]",
+                  "equals": 1
+                },
+                {
+                  "value": "[contains(parameters('licenseTypesToOverwrite'), 'PAYG')]",
+                  "equals": false
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "field": "Microsoft.HybridCompute/machines/extensions/settings",
+                  "ContainsKey": "LicenseType"
+                },
+                {
+                  "value": "[length(intersection(field('Microsoft.HybridCompute/machines/extensions/settings'), createObject('LicenseType', 'LicenseOnly')))]",
+                  "equals": 1
+                },
+                {
+                  "value": "[contains(parameters('licenseTypesToOverwrite'), 'LicenseOnly')]",
+                  "equals": false
                 }
               ]
             }
