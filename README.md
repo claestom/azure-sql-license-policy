@@ -26,8 +26,7 @@ Parameter reference:
 | `ExtensionType` | Yes | N/A | `Windows`, `Linux` | Targets the Arc SQL extension platform. |
 | `SubscriptionId` | No | Not set | Any valid subscription ID | If provided, policy assignment scope is the subscription. |
 | `TargetLicenseType` | No | `Paid` | `Paid`, `PAYG` | Target `LicenseType` value to enforce. |
-| `OverwriteExistingLicenseType` | No | `true` | `$true`, `$false` | `$true` overwrites non-target values; `$false` only sets when missing. |
-| `ExcludeAlreadyPayg` | No | `false` | `$true`, `$false` | When `$true`, resources already set to `PAYG` are excluded from updates, regardless of other parameter settings. |
+| `LicenseTypesToOverwrite` | No | `@('Unspecified','Paid','PAYG','LicenseOnly')` | `Unspecified`, `Paid`, `PAYG`, `LicenseOnly` | Select which current license states are eligible for update. Use `Unspecified` to include resources with no `LicenseType` configured. |
 
 Definition and assignment creation:
 
@@ -46,15 +45,27 @@ Connect-AzAccount
 
 ```powershell
 # Example (includes all parameters)
-.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -OverwriteExistingLicenseType $true -ExcludeAlreadyPayg $false
+.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -LicenseTypesToOverwrite @("Paid")
 ```
 The above example commmand will:
 * Create/update the policy definition at the management group.
 * Assign that policy at the specified subscription scope.
 * Target SQL Server instances running on Linux OS
 * Enforce LicenseType = PAYG.
-* With $true, overwrite existing non-PAYG license values.
-* With `-ExcludeAlreadyPayg $true`, resources already set to PAYG will not be changed.
+* Update only resources where current `LicenseType` is `Paid`.
+
+Scenario examples:
+
+```powershell
+# Target Paid, but only for resources with missing LicenseType or LicenseOnly (do not target PAYG)
+.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "Paid" -LicenseTypesToOverwrite @("Unspecified","LicenseOnly")
+
+# Target PAYG, but only where current LicenseType is Paid (do not target missing or LicenseOnly)
+.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "PAYG" -LicenseTypesToOverwrite @("Paid")
+
+# Overwrite all known existing LicenseType values (Paid, PAYG, LicenseOnly), but not missing
+.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "Paid" -LicenseTypesToOverwrite @("Paid","PAYG","LicenseOnly")
+```
 
 Note: `deployment.ps1` automatically grants required roles to the policy assignment managed identity at assignment scope, preventing common `PolicyAuthorizationFailed` errors during DeployIfNotExists deployments.
 

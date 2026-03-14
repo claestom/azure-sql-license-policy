@@ -16,10 +16,8 @@ param(
   [string]$TargetLicenseType = 'Paid',
 
   [Parameter(Mandatory = $false)]
-  [bool]$OverwriteExistingLicenseType = $true,
-
-  [Parameter(Mandatory = $false)]
-  [bool]$ExcludeAlreadyPayg = $false,
+  [ValidateSet('Unspecified', 'Paid', 'PAYG', 'LicenseOnly')]
+  [string[]]$LicenseTypesToOverwrite = @('Unspecified', 'Paid', 'PAYG', 'LicenseOnly'),
 
   [Parameter(Mandatory = $false)]
   [switch]$SkipManagedIdentityRoleAssignment
@@ -71,8 +69,7 @@ $PolicyAssignment = New-AzPolicyAssignment `
   -PolicyParameterObject @{
     sqlServerExtensionType = $SqlServerExtensionType
     targetLicenseType = $TargetLicenseType
-    overwriteExistingLicenseType = $OverwriteExistingLicenseType
-    excludeAlreadyPayg = $ExcludeAlreadyPayg
+    licenseTypesToOverwrite = $LicenseTypesToOverwrite
   } `
   -Scope $AssignmentScope `
   -Location 'westeurope' `
