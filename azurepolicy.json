@@ -116,8 +116,7 @@
               "allOf": [
                 {
                   "field": "Microsoft.HybridCompute/machines/extensions/settings",
-                  "ContainsKey": "LicenseType",
-                  "equals": false
+                  "notContainsKey": "LicenseType"
                 },
                 {
                   "value": "[contains(parameters('licenseTypesToOverwrite'), 'Unspecified')]",
