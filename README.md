@@ -7,7 +7,7 @@ This repo deploys and remediates a custom Azure Policy that configures and enfor
 - `policy/azurepolicy.json`: Custom policy definition (DeployIfNotExists).
 - `scripts/deployment.ps1`: Creates/updates the policy definition and policy assignment.
 - `scripts/start-remediation.ps1`: Starts a remediation task for the created assignment.
-- `docs/`: PR documentation and screenshots.
+- `docs/screenshots/`: Visual references.
 - `example/`: Example assets.
 
 ## Prerequisites
