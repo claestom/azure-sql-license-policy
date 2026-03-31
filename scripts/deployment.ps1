@@ -51,11 +51,13 @@ else {
   $PolicyAssignmentDisplayName = "Set Arc-enabled SQL Server (ExtensionType: $ExtensionType) license type to 'License With Software Assurance'"
 }
 
+$PolicyJsonPath = Join-Path $PSScriptRoot '..\policy\azurepolicy.json'
+
 #Create policy definition
 New-AzPolicyDefinition `
   -Name $PolicyDefinitionName `
   -DisplayName $PolicyDefinitionDisplayName `
-  -Policy 'azurepolicy.json' `
+  -Policy $PolicyJsonPath `
   -ManagementGroupName $ManagementGroupId `
   -Mode Indexed `
   -ErrorAction Stop

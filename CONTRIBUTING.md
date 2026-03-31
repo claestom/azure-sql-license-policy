@@ -34,22 +34,22 @@ Examples:
 
 Keep policy and script changes consistent with existing patterns:
 
-- Use valid, readable JSON structure in `azurepolicy.json` with stable key ordering where practical.
+- Use valid, readable JSON structure in `policy/azurepolicy.json` with stable key ordering where practical.
 - Prefer explicit parameter names and clear metadata descriptions.
 - Keep parameter names camelCase in policy (`targetLicenseType`, `overwriteExistingLicenseType`) and PowerShell-style in scripts (`TargetLicenseType`).
 - Reuse existing naming conventions for definitions/assignments/remediation names.
 - Avoid adding policy complexity unless it solves a concrete use case.
 - When adding a policy parameter, wire it end-to-end:
-	- `azurepolicy.json`
-	- `deployment.ps1`
+	- `policy/azurepolicy.json`
+	- `scripts/deployment.ps1`
 	- `README.md` (usage and behavior)
 
 ## 4) Testing (keep it light)
 
 No heavy test framework required. Before opening a PR, do basic validation:
 
-- Confirm `deployment.ps1` and `start-remediation.ps1` parse in PowerShell.
-- Confirm `azurepolicy.json` is valid JSON.
+- Confirm `scripts/deployment.ps1` and `scripts/start-remediation.ps1` parse in PowerShell.
+- Confirm `policy/azurepolicy.json` is valid JSON.
 - Manually validate behavior in an Arc-enabled SQL Server environment when your change affects policy logic.
 - Run a quick compliance check/remediation verification to confirm expected outcomes.
 

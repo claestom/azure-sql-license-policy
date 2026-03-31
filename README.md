@@ -4,11 +4,11 @@ This repo deploys and remediates a custom Azure Policy that configures and enfor
 
 ## What Is In This Repo
 
-- `azurepolicy.json`: Custom policy definition (DeployIfNotExists).
-- `deployment.ps1`: Creates/updates the policy definition and policy assignment.
-- `start-remediation.ps1`: Starts a remediation task for the created assignment.
+- `policy/azurepolicy.json`: Custom policy definition (DeployIfNotExists).
+- `scripts/deployment.ps1`: Creates/updates the policy definition and policy assignment.
+- `scripts/start-remediation.ps1`: Starts a remediation task for the created assignment.
+- `docs/`: PR documentation and screenshots.
 - `example/`: Example assets.
-- `screenshots/`: Visual references.
 
 ## Prerequisites
 
@@ -45,7 +45,7 @@ Connect-AzAccount
 
 ```powershell
 # Example (includes all parameters)
-.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -LicenseTypesToOverwrite @("Paid")
+.\scripts\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -LicenseTypesToOverwrite @("Paid")
 ```
 The above example commmand will:
 * Create/update the policy definition at the management group.
@@ -58,16 +58,16 @@ Scenario examples:
 
 ```powershell
 # Target Paid, but only for resources with missing LicenseType or LicenseOnly (do not target PAYG)
-.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "Paid" -LicenseTypesToOverwrite @("Unspecified","LicenseOnly")
+.\scripts\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "Paid" -LicenseTypesToOverwrite @("Unspecified","LicenseOnly")
 
 # Target PAYG, but only where current LicenseType is Paid (do not target missing or LicenseOnly)
-.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "PAYG" -LicenseTypesToOverwrite @("Paid")
+.\scripts\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "PAYG" -LicenseTypesToOverwrite @("Paid")
 
 # Overwrite all known existing LicenseType values (Paid, PAYG, LicenseOnly), but not missing
-.\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "Paid" -LicenseTypesToOverwrite @("Paid","PAYG","LicenseOnly")
+.\scripts\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "Paid" -LicenseTypesToOverwrite @("Paid","PAYG","LicenseOnly")
 ```
 
-Note: `deployment.ps1` automatically grants required roles to the policy assignment managed identity at assignment scope, preventing common `PolicyAuthorizationFailed` errors during DeployIfNotExists deployments.
+Note: `scripts/deployment.ps1` automatically grants required roles to the policy assignment managed identity at assignment scope, preventing common `PolicyAuthorizationFailed` errors during DeployIfNotExists deployments.
 
 ## Start Remediation
 
@@ -83,7 +83,7 @@ Parameter reference:
 
 ```powershell
 # Example (includes all parameters)
-.\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -GrantMissingPermissions
+.\scripts\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -GrantMissingPermissions
 ```
 
 ## Managed Identity And Roles
@@ -102,6 +102,6 @@ If you see `PolicyAuthorizationFailed`, the policy assignment identity is missin
 
 Use one of these options:
 
-- Re-run `deployment.ps1` (default behavior assigns `Resource Policy Contributor` automatically).
-- Re-run `deployment.ps1` (default behavior assigns required roles automatically).
-- Run `start-remediation.ps1 -GrantMissingPermissions` (checks and assigns missing required roles before remediation).
+- Re-run `scripts/deployment.ps1` (default behavior assigns `Resource Policy Contributor` automatically).
+- Re-run `scripts/deployment.ps1` (default behavior assigns required roles automatically).
+- Run `scripts/start-remediation.ps1 -GrantMissingPermissions` (checks and assigns missing required roles before remediation).
