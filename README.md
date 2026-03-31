@@ -105,3 +105,10 @@ Use one of these options:
 - Re-run `scripts/deployment.ps1` (default behavior assigns `Resource Policy Contributor` automatically).
 - Re-run `scripts/deployment.ps1` (default behavior assigns required roles automatically).
 - Run `scripts/start-remediation.ps1 -GrantMissingPermissions` (checks and assigns missing required roles before remediation).
+
+## Screenshots
+
+![overview](./docs/screenshots/overview.png)
+![pre-policy](./docs/screenshots/pre-policy.png)
+![remediation](./docs/screenshots/remediation.png)
+![postpolicy](./docs/screenshots/post-policy.png)
