@@ -1,6 +1,6 @@
 # Arc-enabled SQL Server license type configuration with Azure Policy
 
-This repo deploys and remediates a custom Azure Policy that sets Arc-enabled SQL Server extension `LicenseType` to `Paid` (Software Assurance/Azure benefit).
+This repo deploys and remediates a custom Azure Policy that configures and enforces Arc-enabled SQL Server extension `LicenseType` to a selected target value (for example `Paid` or `PAYG`).
 
 ## What Is In This Repo
 
