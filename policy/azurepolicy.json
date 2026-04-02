@@ -75,6 +75,18 @@
           "equals": "Microsoft.HybridCompute/machines/extensions"
         },
         {
+          "anyOf": [
+            {
+              "field": "name",
+              "in": "[parameters('sqlServerExtensionTypes')]"
+            },
+            {
+              "field": "name",
+              "like": "*Agent.SqlServer"
+            }
+          ]
+        },
+        {
           "field": "Microsoft.HybridCompute/machines/extensions/type",
           "in": "[parameters('sqlServerExtensionTypes')]"
         }
