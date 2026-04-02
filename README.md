@@ -23,7 +23,7 @@ Parameter reference:
 | Parameter | Required | Default | Allowed values | Description |
 |---|---|---|---|---|
 | `ManagementGroupId` | Yes | N/A | Any valid management group ID | Scope where the policy definition is created. |
-| `ExtensionType` | Yes | N/A | `Windows`, `Linux` | Targets the Arc SQL extension platform. |
+| `ExtensionType` | No | `Both` | `Windows`, `Linux`, `Both` | Targets the Arc SQL extension platform. When `Both` (default), creates a definition and assignment for each platform. |
 | `SubscriptionId` | No | Not set | Any valid subscription ID | If provided, policy assignment scope is the subscription. |
 | `TargetLicenseType` | No | `Paid` | `Paid`, `PAYG` | Target `LicenseType` value to enforce. |
 | `LicenseTypesToOverwrite` | No | `@('Unspecified','Paid','PAYG','LicenseOnly')` | `Unspecified`, `Paid`, `PAYG`, `LicenseOnly` | Select which current license states are eligible for update. Use `Unspecified` to include resources with no `LicenseType` configured. |
@@ -44,15 +44,19 @@ Connect-AzAccount
 ```
 
 ```powershell
-# Example (includes all parameters)
-.\scripts\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux or Windows" -SubscriptionId "<subscription-id> - OPTIONAL" -TargetLicenseType "PAYG" -LicenseTypesToOverwrite @("Paid")
+# Example: target both platforms (default)
+.\scripts\deployment.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -LicenseTypesToOverwrite @("Paid")
+
+# Example: target only Linux
+.\scripts\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -LicenseTypesToOverwrite @("Paid")
 ```
-The above example commmand will:
-* Create/update the policy definition at the management group.
-* Assign that policy at the specified subscription scope.
-* Target SQL Server instances running on Linux/Windows OS
+The first example (without `-ExtensionType`) will:
+* Create/update a policy definition and assignment for **both** Windows and Linux.
+* Assign those policies at the specified subscription scope.
 * Enforce LicenseType = PAYG.
 * Update only resources where current `LicenseType` is `Paid`.
+
+The second example targets only Linux SQL Server instances.
 
 Scenario examples:
 
@@ -76,13 +80,16 @@ Parameter reference:
 | Parameter | Required | Default | Allowed values | Description |
 |---|---|---|---|---|
 | `ManagementGroupId` | Yes | N/A | Any valid management group ID | Used to resolve the policy definition/assignment naming context. |
-| `ExtensionType` | Yes | N/A | `Windows`, `Linux` | Must match the platform used for the assignment. |
+| `ExtensionType` | No | `Both` | `Windows`, `Linux`, `Both` | Must match the platform used for the assignment. When `Both` (default), remediates both platform assignments. |
 | `SubscriptionId` | No | Not set | Any valid subscription ID | If provided, remediation runs at subscription scope. |
 | `TargetLicenseType` | No | `Paid` | `Paid`, `PAYG` | Must match the assignment target license type. |
 | `GrantMissingPermissions` | No | `false` | Switch (`present`/`not present`) | If set, checks and assigns missing required roles before remediation. |
 
 ```powershell
-# Example (includes all parameters)
+# Example: remediate both platforms (default)
+.\scripts\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -GrantMissingPermissions
+
+# Example: remediate only Linux
 .\scripts\start-remediation.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -GrantMissingPermissions
 ```
 
