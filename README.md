@@ -26,7 +26,7 @@ Parameter reference:
 | `ExtensionType` | No | `Both` | `Windows`, `Linux`, `Both` | Targets the Arc SQL extension platform. When `Both` (default), creates a definition and assignment for each platform. |
 | `SubscriptionId` | No | Not set | Any valid subscription ID | If provided, policy assignment scope is the subscription. |
 | `TargetLicenseType` | Yes | N/A | `Paid`, `PAYG` | Target `LicenseType` value to enforce. |
-| `LicenseTypesToOverwrite` | No | `@('Unspecified','Paid','PAYG','LicenseOnly')` | `Unspecified`, `Paid`, `PAYG`, `LicenseOnly` | Select which current license states are eligible for update. Use `Unspecified` to include resources with no `LicenseType` configured. |
+| `LicenseTypesToOverwrite` | No | All | `Unspecified`, `Paid`, `PAYG`, `LicenseOnly` | Select which current license states are eligible for update. Use `Unspecified` to include resources with no `LicenseType` configured. |
 
 Definition and assignment creation:
 
