@@ -11,9 +11,9 @@ param(
   [ValidateSet('Windows', 'Linux', 'Both')]
   [string]$ExtensionType = 'Both',
 
-  [Parameter(Mandatory = $false)]
+  [Parameter(Mandatory = $true)]
   [ValidateSet('Paid', 'PAYG')]
-  [string]$TargetLicenseType = 'Paid',
+  [string]$TargetLicenseType,
 
   [Parameter(Mandatory = $false)]
   [ValidateSet('Unspecified', 'Paid', 'PAYG', 'LicenseOnly')]
