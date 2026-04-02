@@ -3,13 +3,13 @@ param(
   [ValidateNotNullOrEmpty()]
   [string]$ManagementGroupId,
 
-  [Parameter(Mandatory = $true)]
-  [ValidateSet('Windows', 'Linux')]
-  [string]$ExtensionType,
-
   [Parameter(Mandatory = $false)]
+  [ValidateSet('Windows', 'Linux', 'Both')]
+  [string]$ExtensionType = 'Both',
+
+  [Parameter(Mandatory = $true)]
   [ValidateSet('Paid', 'PAYG')]
-  [string]$TargetLicenseType = 'Paid',
+  [string]$TargetLicenseType,
 
   [Parameter(Mandatory = $false)]
   [ValidateNotNullOrEmpty()]
@@ -37,8 +37,14 @@ if ($PSBoundParameters.ContainsKey('SubscriptionId')) {
   $AssignmentScope = "/subscriptions/$SubscriptionId"
 }
 
-$PlatformToken = $ExtensionType.ToLowerInvariant()
 $LicenseToken = if ($TargetLicenseType -eq 'PAYG') { 'payg' } else { 'sa' }
+
+if ($ExtensionType -eq 'Both') {
+  $PlatformToken = 'all'
+}
+else {
+  $PlatformToken = $ExtensionType.ToLowerInvariant()
+}
 
 if (-not $PSBoundParameters.ContainsKey('PolicyAssignmentName')) {
   $PolicyAssignmentName = "sql-arc-$LicenseToken-$PlatformToken"
@@ -49,7 +55,6 @@ if (-not $PSBoundParameters.ContainsKey('RemediationName')) {
 }
 
 if (-not $PSBoundParameters.ContainsKey('ResourceDiscoveryMode')) {
-  # Re-evaluate is supported at subscription scope and below.
   if ($PSBoundParameters.ContainsKey('SubscriptionId')) {
     $ResourceDiscoveryMode = 'ReEvaluateCompliance'
   }
@@ -59,14 +64,14 @@ if (-not $PSBoundParameters.ContainsKey('ResourceDiscoveryMode')) {
 }
 
 # Validate assignment exists before creating remediation.
-$PolicyAssignment = Get-AzPolicyAssignment -Scope $AssignmentScope -Name $PolicyAssignmentName -ErrorAction Stop
+$PolicyAssignmentObj = Get-AzPolicyAssignment -Scope $AssignmentScope -Name $PolicyAssignmentName -ErrorAction Stop
 
 $requiredRoleNames = @(
   'Azure Extension for SQL Server Deployment'
   'Reader'
   'Resource Policy Contributor'
 )
-$principalId = $PolicyAssignment.IdentityPrincipalId
+$principalId = $PolicyAssignmentObj.IdentityPrincipalId
 
 if ([string]::IsNullOrEmpty($principalId)) {
   throw "Policy assignment identity principal ID is empty. Cannot verify required roles."
@@ -104,9 +109,9 @@ if ($missingRoles.Count -gt 0) {
 }
 
 $CommonParams = @{
-  Name = $RemediationName
-  PolicyAssignmentId = $PolicyAssignment.Id
-  Scope = $AssignmentScope
+  Name                  = $RemediationName
+  PolicyAssignmentId    = $PolicyAssignmentObj.Id
+  Scope                 = $AssignmentScope
   ResourceDiscoveryMode = $ResourceDiscoveryMode
 }
 

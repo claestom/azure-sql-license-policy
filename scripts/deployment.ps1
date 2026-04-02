@@ -7,13 +7,13 @@ param(
   [ValidateNotNullOrEmpty()]
   [string]$SubscriptionId,
 
-  [Parameter(Mandatory = $true)]
-  [ValidateSet('Windows', 'Linux')]
-  [string]$ExtensionType,
-
   [Parameter(Mandatory = $false)]
+  [ValidateSet('Windows', 'Linux', 'Both')]
+  [string]$ExtensionType = 'Both',
+
+  [Parameter(Mandatory = $true)]
   [ValidateSet('Paid', 'PAYG')]
-  [string]$TargetLicenseType = 'Paid',
+  [string]$TargetLicenseType,
 
   [Parameter(Mandatory = $false)]
   [ValidateSet('Unspecified', 'Paid', 'PAYG', 'LicenseOnly')]
@@ -29,29 +29,40 @@ if ($PSBoundParameters.ContainsKey('SubscriptionId')) {
   $AssignmentScope = "/subscriptions/$SubscriptionId"
 }
 
-$SqlServerExtensionType = if ($ExtensionType -eq 'Linux') {
-  'LinuxAgent.SqlServer'
+$ExtensionTypes = if ($ExtensionType -eq 'Both') {
+  @('Windows', 'Linux')
 }
 else {
-  'WindowsAgent.SqlServer'
+  @($ExtensionType)
 }
 
-$PlatformToken = $ExtensionType.ToLowerInvariant()
+$SqlServerExtensionTypes = $ExtensionTypes | ForEach-Object {
+  if ($_ -eq 'Linux') { 'LinuxAgent.SqlServer' } else { 'WindowsAgent.SqlServer' }
+}
+
+$PolicyJsonPath = Join-Path $PSScriptRoot '..\policy\azurepolicy.json'
 $LicenseToken = if ($TargetLicenseType -eq 'PAYG') { 'payg' } else { 'sa' }
+
+if ($ExtensionType -eq 'Both') {
+  $PlatformToken = 'all'
+  $PlatformLabel = 'All platforms'
+}
+else {
+  $PlatformToken = $ExtensionType.ToLowerInvariant()
+  $PlatformLabel = $ExtensionType
+}
 
 $PolicyDefinitionName = "activate-sql-arc-$LicenseToken-$PlatformToken"
 $PolicyAssignmentName = "sql-arc-$LicenseToken-$PlatformToken"
 
 if ($TargetLicenseType -eq 'PAYG') {
-  $PolicyDefinitionDisplayName = "Arc-enabled SQL Server (ExtensionType: $ExtensionType) license type to 'Pay-as-you-go'"
-  $PolicyAssignmentDisplayName = "Arc-enabled SQL Server (ExtensionType: $ExtensionType) license type to 'Pay-as-you-go'"
+  $PolicyDefinitionDisplayName = "Arc-enabled SQL Server ($PlatformLabel) license type to 'Pay-as-you-go'"
+  $PolicyAssignmentDisplayName = "Arc-enabled SQL Server ($PlatformLabel) license type to 'Pay-as-you-go'"
 }
 else {
-  $PolicyDefinitionDisplayName = "Set Arc-enabled SQL Server (ExtensionType: $ExtensionType) license type to 'License With Software Assurance'"
-  $PolicyAssignmentDisplayName = "Set Arc-enabled SQL Server (ExtensionType: $ExtensionType) license type to 'License With Software Assurance'"
+  $PolicyDefinitionDisplayName = "Set Arc-enabled SQL Server ($PlatformLabel) license type to 'License With Software Assurance'"
+  $PolicyAssignmentDisplayName = "Set Arc-enabled SQL Server ($PlatformLabel) license type to 'License With Software Assurance'"
 }
-
-$PolicyJsonPath = Join-Path $PSScriptRoot '..\policy\azurepolicy.json'
 
 #Create policy definition
 New-AzPolicyDefinition `
@@ -69,8 +80,8 @@ $PolicyAssignment = New-AzPolicyAssignment `
   -DisplayName $PolicyAssignmentDisplayName `
   -PolicyDefinition $Policy `
   -PolicyParameterObject @{
-    sqlServerExtensionType = $SqlServerExtensionType
-    targetLicenseType = $TargetLicenseType
+    sqlServerExtensionTypes = $SqlServerExtensionTypes
+    targetLicenseType       = $TargetLicenseType
     licenseTypesToOverwrite = $LicenseTypesToOverwrite
   } `
   -Scope $AssignmentScope `
@@ -111,6 +122,3 @@ if (-not $SkipManagedIdentityRoleAssignment) {
     }
   }
 }
-
-# Optional use subscriptions instead of management groups.
-# or "/subscriptions/<SubscriptionId>"
