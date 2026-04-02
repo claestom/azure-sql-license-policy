@@ -30,7 +30,7 @@ Parameter reference:
 
 Definition and assignment creation:
 
-1. Download the files.
+1. Clone the repo.
 
 ```powershell
 git clone https://github.com/claestom/sa-sql-arc-policy
@@ -45,12 +45,12 @@ Connect-AzAccount
 
 ```powershell
 # Example (includes all parameters)
-.\scripts\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -LicenseTypesToOverwrite @("Paid")
+.\scripts\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux or Windows" -SubscriptionId "<subscription-id> - OPTIONAL" -TargetLicenseType "PAYG" -LicenseTypesToOverwrite @("Paid")
 ```
 The above example commmand will:
 * Create/update the policy definition at the management group.
 * Assign that policy at the specified subscription scope.
-* Target SQL Server instances running on Linux OS
+* Target SQL Server instances running on Linux/Windows OS
 * Enforce LicenseType = PAYG.
 * Update only resources where current `LicenseType` is `Paid`.
 
