@@ -49,7 +49,7 @@ if ($ExtensionType -eq 'Both') {
 }
 else {
   $PlatformToken = $ExtensionType.ToLowerInvariant()
-  $PlatformLabel = "ExtensionType: $ExtensionType"
+  $PlatformLabel = $ExtensionType
 }
 
 $PolicyDefinitionName = "activate-sql-arc-$LicenseToken-$PlatformToken"
