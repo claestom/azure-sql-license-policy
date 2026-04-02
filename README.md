@@ -23,7 +23,7 @@ Parameter reference:
 | Parameter | Required | Default | Allowed values | Description |
 |---|---|---|---|---|
 | `ManagementGroupId` | Yes | N/A | Any valid management group ID | Scope where the policy definition is created. |
-| `ExtensionType` | No | `Both` | `Windows`, `Linux`, `Both` | Targets the Arc SQL extension platform. When `Both` (default), creates a definition and assignment for each platform. |
+| `ExtensionType` | No | `Both` | `Windows`, `Linux`, `Both` | Targets the Arc SQL extension platform. When `Both` (default), a single policy definition and assignment covers both platforms. When a specific type is selected, the naming and scope are tailored to that platform. |
 | `SubscriptionId` | No | Not set | Any valid subscription ID | If provided, policy assignment scope is the subscription. |
 | `TargetLicenseType` | Yes | N/A | `Paid`, `PAYG` | Target `LicenseType` value to enforce. |
 | `LicenseTypesToOverwrite` | No | All | `Unspecified`, `Paid`, `PAYG`, `LicenseOnly` | Select which current license states are eligible for update. Use `Unspecified` to include resources with no `LicenseType` configured. |
@@ -51,12 +51,12 @@ Connect-AzAccount
 .\scripts\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -SubscriptionId "<subscription-id>" -TargetLicenseType "PAYG" -LicenseTypesToOverwrite @("Paid")
 ```
 The first example (without `-ExtensionType`) will:
-* Create/update a policy definition and assignment for **both** Windows and Linux.
-* Assign those policies at the specified subscription scope.
+* Create/update a single policy definition and assignment covering **both** Windows and Linux.
+* Assign that policy at the specified subscription scope.
 * Enforce LicenseType = PAYG.
 * Update only resources where current `LicenseType` is `Paid`.
 
-The second example targets only Linux SQL Server instances.
+The second example creates a Linux-specific definition and assignment, with platform-tailored naming.
 
 Scenario examples:
 
@@ -80,7 +80,7 @@ Parameter reference:
 | Parameter | Required | Default | Allowed values | Description |
 |---|---|---|---|---|
 | `ManagementGroupId` | Yes | N/A | Any valid management group ID | Used to resolve the policy definition/assignment naming context. |
-| `ExtensionType` | No | `Both` | `Windows`, `Linux`, `Both` | Must match the platform used for the assignment. When `Both` (default), remediates both platform assignments. |
+| `ExtensionType` | No | `Both` | `Windows`, `Linux`, `Both` | Must match the platform used for the assignment. When `Both` (default), remediates the combined assignment. |
 | `SubscriptionId` | No | Not set | Any valid subscription ID | If provided, remediation runs at subscription scope. |
 | `TargetLicenseType` | Yes | N/A | `Paid`, `PAYG` | Must match the assignment target license type. |
 | `GrantMissingPermissions` | No | `false` | Switch (`present`/`not present`) | If set, checks and assigns missing required roles before remediation. |

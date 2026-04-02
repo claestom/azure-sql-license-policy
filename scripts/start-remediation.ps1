@@ -37,105 +37,90 @@ if ($PSBoundParameters.ContainsKey('SubscriptionId')) {
   $AssignmentScope = "/subscriptions/$SubscriptionId"
 }
 
-$ExtensionTypes = if ($ExtensionType -eq 'Both') {
-  @('Windows', 'Linux')
-}
-else {
-  @($ExtensionType)
-}
-
 $LicenseToken = if ($TargetLicenseType -eq 'PAYG') { 'payg' } else { 'sa' }
 
-foreach ($CurrentExtensionType in $ExtensionTypes) {
-  $PlatformToken = $CurrentExtensionType.ToLowerInvariant()
+if ($ExtensionType -eq 'Both') {
+  $PlatformToken = 'all'
+}
+else {
+  $PlatformToken = $ExtensionType.ToLowerInvariant()
+}
 
-  $CurrentPolicyAssignmentName = if ($PSBoundParameters.ContainsKey('PolicyAssignmentName') -and $ExtensionType -ne 'Both') {
-    $PolicyAssignmentName
+if (-not $PSBoundParameters.ContainsKey('PolicyAssignmentName')) {
+  $PolicyAssignmentName = "sql-arc-$LicenseToken-$PlatformToken"
+}
+
+if (-not $PSBoundParameters.ContainsKey('RemediationName')) {
+  $RemediationName = "remediate-sql-arc-$LicenseToken-$PlatformToken"
+}
+
+if (-not $PSBoundParameters.ContainsKey('ResourceDiscoveryMode')) {
+  if ($PSBoundParameters.ContainsKey('SubscriptionId')) {
+    $ResourceDiscoveryMode = 'ReEvaluateCompliance'
   }
   else {
-    "sql-arc-$LicenseToken-$PlatformToken"
+    $ResourceDiscoveryMode = 'ExistingNonCompliant'
   }
+}
 
-  $CurrentRemediationName = if ($PSBoundParameters.ContainsKey('RemediationName') -and $ExtensionType -ne 'Both') {
-    $RemediationName
+# Validate assignment exists before creating remediation.
+$PolicyAssignmentObj = Get-AzPolicyAssignment -Scope $AssignmentScope -Name $PolicyAssignmentName -ErrorAction Stop
+
+$requiredRoleNames = @(
+  'Azure Extension for SQL Server Deployment'
+  'Reader'
+  'Resource Policy Contributor'
+)
+$principalId = $PolicyAssignmentObj.IdentityPrincipalId
+
+if ([string]::IsNullOrEmpty($principalId)) {
+  throw "Policy assignment identity principal ID is empty. Cannot verify required roles."
+}
+
+$missingRoles = @()
+
+foreach ($requiredRoleName in $requiredRoleNames) {
+  $requiredRole = Get-AzRoleAssignment `
+    -ObjectId $principalId `
+    -RoleDefinitionName $requiredRoleName `
+    -Scope $AssignmentScope `
+    -ErrorAction SilentlyContinue
+
+  if (-not $requiredRole) {
+    $missingRoles += $requiredRoleName
   }
-  else {
-    "remediate-sql-arc-$LicenseToken-$PlatformToken"
-  }
+}
 
-  $CurrentResourceDiscoveryMode = if ($PSBoundParameters.ContainsKey('ResourceDiscoveryMode')) {
-    $ResourceDiscoveryMode
-  }
-  elseif ($PSBoundParameters.ContainsKey('SubscriptionId')) {
-    'ReEvaluateCompliance'
-  }
-  else {
-    'ExistingNonCompliant'
-  }
+if ($missingRoles.Count -gt 0) {
+  if ($GrantMissingPermissions) {
+    foreach ($missingRole in $missingRoles) {
+      New-AzRoleAssignment `
+        -ObjectId $principalId `
+        -RoleDefinitionName $missingRole `
+        -Scope $AssignmentScope `
+        -ErrorAction Stop | Out-Null
 
-  Write-Output "--- Starting remediation for ExtensionType: $CurrentExtensionType ---"
-
-  # Validate assignment exists before creating remediation.
-  $PolicyAssignmentObj = Get-AzPolicyAssignment -Scope $AssignmentScope -Name $CurrentPolicyAssignmentName -ErrorAction Stop
-
-  $requiredRoleNames = @(
-    'Azure Extension for SQL Server Deployment'
-    'Reader'
-    'Resource Policy Contributor'
-  )
-  $principalId = $PolicyAssignmentObj.IdentityPrincipalId
-
-  if ([string]::IsNullOrEmpty($principalId)) {
-    throw "Policy assignment identity principal ID is empty. Cannot verify required roles."
-  }
-
-  $missingRoles = @()
-
-  foreach ($requiredRoleName in $requiredRoleNames) {
-    $requiredRole = Get-AzRoleAssignment `
-      -ObjectId $principalId `
-      -RoleDefinitionName $requiredRoleName `
-      -Scope $AssignmentScope `
-      -ErrorAction SilentlyContinue
-
-    if (-not $requiredRole) {
-      $missingRoles += $requiredRoleName
+      Write-Output "Assigned '$missingRole' to policy assignment identity ($principalId) at scope $AssignmentScope."
     }
   }
-
-  if ($missingRoles.Count -gt 0) {
-    if ($GrantMissingPermissions) {
-      foreach ($missingRole in $missingRoles) {
-        New-AzRoleAssignment `
-          -ObjectId $principalId `
-          -RoleDefinitionName $missingRole `
-          -Scope $AssignmentScope `
-          -ErrorAction Stop | Out-Null
-
-        Write-Output "Assigned '$missingRole' to policy assignment identity ($principalId) at scope $AssignmentScope."
-      }
-    }
-    else {
-      throw "Missing required roles [$($missingRoles -join ', ')] for policy assignment identity ($principalId) at scope $AssignmentScope. Re-run with -GrantMissingPermissions or assign the roles manually."
-    }
-  }
-
-  $CommonParams = @{
-    Name                  = $CurrentRemediationName
-    PolicyAssignmentId    = $PolicyAssignmentObj.Id
-    Scope                 = $AssignmentScope
-    ResourceDiscoveryMode = $CurrentResourceDiscoveryMode
-  }
-
-  if (Get-Command -Name Start-AzPolicyRemediation -ErrorAction SilentlyContinue) {
-    Start-AzPolicyRemediation @CommonParams
-  }
-  elseif (Get-Command -Name New-AzPolicyRemediation -ErrorAction SilentlyContinue) {
-    New-AzPolicyRemediation @CommonParams
-  }
   else {
-    throw "Neither Start-AzPolicyRemediation nor New-AzPolicyRemediation is available. Install/update Az.PolicyInsights."
+    throw "Missing required roles [$($missingRoles -join ', ')] for policy assignment identity ($principalId) at scope $AssignmentScope. Re-run with -GrantMissingPermissions or assign the roles manually."
   }
+}
 
-  Write-Output "--- Completed remediation for ExtensionType: $CurrentExtensionType ---"
+$CommonParams = @{
+  Name                  = $RemediationName
+  PolicyAssignmentId    = $PolicyAssignmentObj.Id
+  Scope                 = $AssignmentScope
+  ResourceDiscoveryMode = $ResourceDiscoveryMode
+}
+
+if (Get-Command -Name Start-AzPolicyRemediation -ErrorAction SilentlyContinue) {
+  Start-AzPolicyRemediation @CommonParams
+}
+elseif (Get-Command -Name New-AzPolicyRemediation -ErrorAction SilentlyContinue) {
+  New-AzPolicyRemediation @CommonParams
+}
+else {
+  throw "Neither Start-AzPolicyRemediation nor New-AzPolicyRemediation is available. Install/update Az.PolicyInsights."
 }

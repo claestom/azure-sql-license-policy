@@ -20,17 +20,20 @@
       ],
       "defaultValue": "DeployIfNotExists"
     },
-    "sqlServerExtensionType": {
-      "type": "String",
+    "sqlServerExtensionTypes": {
+      "type": "Array",
       "metadata": {
-        "displayName": "SQL Server extension type",
-        "description": "Arc-enabled SQL Server extension name to target."
+        "displayName": "SQL Server extension types",
+        "description": "Arc-enabled SQL Server extension names to target."
       },
       "allowedValues": [
         "WindowsAgent.SqlServer",
         "LinuxAgent.SqlServer"
       ],
-      "defaultValue": "WindowsAgent.SqlServer"
+      "defaultValue": [
+        "WindowsAgent.SqlServer",
+        "LinuxAgent.SqlServer"
+      ]
     },
     "targetLicenseType": {
       "type": "String",
@@ -72,20 +75,8 @@
           "equals": "Microsoft.HybridCompute/machines/extensions"
         },
         {
-          "anyOf": [
-            {
-              "field": "name",
-              "equals": "[parameters('sqlServerExtensionType')]"
-            },
-            {
-              "field": "name",
-              "like": "[concat('*/', parameters('sqlServerExtensionType'))]"
-            }
-          ]
-        },
-        {
           "field": "Microsoft.HybridCompute/machines/extensions/type",
-          "equals": "[parameters('sqlServerExtensionType')]"
+          "in": "[parameters('sqlServerExtensionTypes')]"
         }
       ]
     },
