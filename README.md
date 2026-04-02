@@ -61,8 +61,8 @@ The second example targets only Linux SQL Server instances.
 Scenario examples:
 
 ```powershell
-# Target Paid, but only for resources with missing LicenseType or LicenseOnly (do not target PAYG)
-.\scripts\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "Paid" -LicenseTypesToOverwrite @("Unspecified","LicenseOnly")
+# Target Paid, both Linux and Windows, but only for resources with missing LicenseType or LicenseOnly (do not target PAYG)
+.\scripts\deployment.ps1 -ManagementGroupId "<management-group-id>" -TargetLicenseType "Paid" -LicenseTypesToOverwrite @("Unspecified","LicenseOnly")
 
 # Target PAYG, but only where current LicenseType is Paid (do not target missing or LicenseOnly)
 .\scripts\deployment.ps1 -ManagementGroupId "<management-group-id>" -ExtensionType "Linux" -TargetLicenseType "PAYG" -LicenseTypesToOverwrite @("Paid")
