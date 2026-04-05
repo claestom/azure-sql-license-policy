@@ -151,6 +151,14 @@ $TargetLicenseType    = "PAYG"                                      # Must match
 
 > **Note:** Use `-GrantMissingPermissions` to automatically check and assign any missing required roles before remediation starts.
 
+## Recurring Billing Consent (PAYG)
+
+When `TargetLicenseType` is set to `PAYG`, the policy automatically includes `ConsentToRecurringPAYG` in the extension settings with `Consented: true` and a UTC timestamp. This is required for recurring pay-as-you-go billing as described in the [Microsoft documentation](https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/manage-pay-as-you-go-transition?view=sql-server-ver17#recurring-billing-consent).
+
+The policy also checks for `ConsentToRecurringPAYG` in its compliance evaluation — resources with `LicenseType: PAYG` but missing the consent property are flagged as non-compliant and remediated.
+
+When `TargetLicenseType` is `Paid`, this behavior is skipped entirely.
+
 ## Managed Identity And Roles
 
 The policy assignment is created with `-IdentityType SystemAssigned`. Azure creates a managed identity on the assignment and uses it to apply DeployIfNotExists changes during enforcement and remediation.
