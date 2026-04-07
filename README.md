@@ -157,7 +157,7 @@ When `TargetLicenseType` is set to `PAYG`, the policy automatically includes `Co
 
 The policy also checks for `ConsentToRecurringPAYG` in its compliance evaluation — resources with `LicenseType: PAYG` but missing the consent property are flagged as non-compliant and remediated. This applies both when transitioning to PAYG and for existing PAYG extensions that predate the consent requirement (backward compatibility).
 
-When `TargetLicenseType` is not `PAYG`, the policy removes any existing `ConsentToRecurringPAYG` property during remediation to keep extension settings clean after a license type change away from PAYG. Extensions that still have `ConsentToRecurringPAYG` with a non-PAYG license type are flagged as non-compliant.
+> **Note:** Once `ConsentToRecurringPAYG` is set on an extension, it cannot be removed — this is enforced by the Azure resource provider. When transitioning away from PAYG, the policy changes `LicenseType` but leaves the consent property in place.
 
 ## Managed Identity And Roles
 

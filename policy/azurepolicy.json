@@ -116,16 +116,8 @@
                 {
                   "anyOf": [
                     {
-                      "allOf": [
-                        {
-                          "value": "[parameters('targetLicenseType')]",
-                          "notEquals": "PAYG"
-                        },
-                        {
-                          "field": "Microsoft.HybridCompute/machines/extensions/settings",
-                          "notContainsKey": "ConsentToRecurringPAYG"
-                        }
-                      ]
+                      "value": "[parameters('targetLicenseType')]",
+                      "notEquals": "PAYG"
                     },
                     {
                       "allOf": [
@@ -258,7 +250,6 @@
               "functions": [],
               "variables": {
                 "vmExtensionPublisher": "Microsoft.AzureData",
-                "cleanedSettings": "[if(contains(parameters('existingSettings'), 'ConsentToRecurringPAYG'), toObject(filter(items(parameters('existingSettings')), lambda('i', not(equals(lambdaVariables('i').key, 'ConsentToRecurringPAYG')))), lambda('i', lambdaVariables('i').key), lambda('i', lambdaVariables('i').value)), parameters('existingSettings'))]",
                 "baseSettings": {
                   "LicenseType": "[parameters('targetLicenseType')]"
                 },
@@ -269,8 +260,7 @@
                     "ConsentTimestamp": "[parameters('consentTimestamp')]"
                   }
                 },
-                "licenseSettings": "[if(equals(parameters('targetLicenseType'), 'PAYG'), variables('paygConsentSettings'), variables('baseSettings'))]",
-                "mergedSettings": "[union(variables('cleanedSettings'), variables('licenseSettings'))]"
+                "licenseSettings": "[if(equals(parameters('targetLicenseType'), 'PAYG'), variables('paygConsentSettings'), variables('baseSettings'))]"
               },
               "resources": [
                 {
@@ -281,7 +271,7 @@
                   "properties": {
                     "publisher": "[variables('vmExtensionPublisher')]",
                     "type": "[parameters('agentName')]",
-                    "settings": "[variables('mergedSettings')]"
+                    "settings": "[union(parameters('existingSettings'), variables('licenseSettings'))]"
                   }
                 }
               ],
