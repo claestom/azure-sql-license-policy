@@ -120,8 +120,16 @@
                       "notEquals": "PAYG"
                     },
                     {
-                      "field": "Microsoft.HybridCompute/machines/extensions/settings",
-                      "ContainsKey": "ConsentToRecurringPAYG"
+                      "allOf": [
+                        {
+                          "value": "[parameters('targetLicenseType')]",
+                          "equals": "PAYG"
+                        },
+                        {
+                          "field": "Microsoft.HybridCompute/machines/extensions/settings",
+                          "ContainsKey": "ConsentToRecurringPAYG"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -168,6 +176,10 @@
                 {
                   "value": "[contains(parameters('licenseTypesToOverwrite'), 'PAYG')]",
                   "equals": false
+                },
+                {
+                  "field": "Microsoft.HybridCompute/machines/extensions/settings",
+                  "ContainsKey": "ConsentToRecurringPAYG"
                 }
               ]
             },

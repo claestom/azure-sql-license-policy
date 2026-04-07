@@ -155,9 +155,23 @@ $TargetLicenseType    = "PAYG"                                      # Must match
 
 When `TargetLicenseType` is set to `PAYG`, the policy automatically includes `ConsentToRecurringPAYG` in the extension settings with `Consented: true` and a UTC timestamp. This is required for recurring pay-as-you-go billing as described in the [Microsoft documentation](https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/manage-pay-as-you-go-transition?view=sql-server-ver17#recurring-billing-consent).
 
-The policy also checks for `ConsentToRecurringPAYG` in its compliance evaluation — resources with `LicenseType: PAYG` but missing the consent property are flagged as non-compliant and remediated.
+The policy also checks for `ConsentToRecurringPAYG` in its compliance evaluation — resources with `LicenseType: PAYG` but missing the consent property are flagged as non-compliant and remediated. This applies both when transitioning to PAYG and for existing PAYG extensions that predate the consent requirement (backward compatibility).
 
-When `TargetLicenseType` is `Paid`, this behavior is skipped entirely.
+> **Note:** Once `ConsentToRecurringPAYG` is set on an extension, it cannot be removed — this is enforced by the Azure resource provider. When transitioning away from PAYG, the policy changes `LicenseType` but leaves the consent property in place.
+
+## Compliance Reasons
+
+| Current state | Target | In overwrite list? | Result | Reason |
+|---|---|---|---|---|
+| `LicenseType: Paid` | `PAYG` | `Paid` ✓ | Non-compliant | License type does not match target; eligible for overwrite. |
+| `LicenseType: LicenseOnly` | `PAYG` | `LicenseOnly` ✓ | Non-compliant | License type does not match target; eligible for overwrite. |
+| `LicenseType` missing | `PAYG` | `Unspecified` ✓ | Non-compliant | No license type configured; eligible for overwrite. |
+| `LicenseType: PAYG`, no consent | `PAYG` | — | Non-compliant | License type matches target but `ConsentToRecurringPAYG` is missing. |
+| `LicenseType: PAYG`, no consent | `Paid` | `PAYG` ✗ | Non-compliant | Excluded from overwrite but `ConsentToRecurringPAYG` is missing (backward compatibility). |
+| `LicenseType: PAYG`, with consent | `PAYG` | — | Compliant | License type matches target and consent is present. |
+| `LicenseType: PAYG`, with consent | `Paid` | `PAYG` ✗ | Compliant | Excluded from overwrite and consent is present. |
+| `LicenseType: Paid` | `PAYG` | `Paid` ✗ | Compliant | Excluded from overwrite; no action taken. |
+| `LicenseType: Paid` | `Paid` | — | Compliant | License type already matches target. |
 
 ## Managed Identity And Roles
 
