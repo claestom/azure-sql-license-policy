@@ -116,12 +116,28 @@
                 {
                   "anyOf": [
                     {
-                      "value": "[parameters('targetLicenseType')]",
-                      "notEquals": "PAYG"
+                      "allOf": [
+                        {
+                          "value": "[parameters('targetLicenseType')]",
+                          "notEquals": "PAYG"
+                        },
+                        {
+                          "field": "Microsoft.HybridCompute/machines/extensions/settings",
+                          "notContainsKey": "ConsentToRecurringPAYG"
+                        }
+                      ]
                     },
                     {
-                      "field": "Microsoft.HybridCompute/machines/extensions/settings",
-                      "ContainsKey": "ConsentToRecurringPAYG"
+                      "allOf": [
+                        {
+                          "value": "[parameters('targetLicenseType')]",
+                          "equals": "PAYG"
+                        },
+                        {
+                          "field": "Microsoft.HybridCompute/machines/extensions/settings",
+                          "ContainsKey": "ConsentToRecurringPAYG"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -168,6 +184,10 @@
                 {
                   "value": "[contains(parameters('licenseTypesToOverwrite'), 'PAYG')]",
                   "equals": false
+                },
+                {
+                  "field": "Microsoft.HybridCompute/machines/extensions/settings",
+                  "ContainsKey": "ConsentToRecurringPAYG"
                 }
               ]
             },
@@ -238,6 +258,7 @@
               "functions": [],
               "variables": {
                 "vmExtensionPublisher": "Microsoft.AzureData",
+                "cleanedSettings": "[if(contains(parameters('existingSettings'), 'ConsentToRecurringPAYG'), removeProperty(parameters('existingSettings'), 'ConsentToRecurringPAYG'), parameters('existingSettings'))]",
                 "baseSettings": {
                   "LicenseType": "[parameters('targetLicenseType')]"
                 },
@@ -248,7 +269,8 @@
                     "ConsentTimestamp": "[parameters('consentTimestamp')]"
                   }
                 },
-                "licenseSettings": "[if(equals(parameters('targetLicenseType'), 'PAYG'), variables('paygConsentSettings'), variables('baseSettings'))]"
+                "licenseSettings": "[if(equals(parameters('targetLicenseType'), 'PAYG'), variables('paygConsentSettings'), variables('baseSettings'))]",
+                "mergedSettings": "[union(variables('cleanedSettings'), variables('licenseSettings'))]"
               },
               "resources": [
                 {
@@ -259,7 +281,7 @@
                   "properties": {
                     "publisher": "[variables('vmExtensionPublisher')]",
                     "type": "[parameters('agentName')]",
-                    "settings": "[union(parameters('existingSettings'), variables('licenseSettings'))]"
+                    "settings": "[variables('mergedSettings')]"
                   }
                 }
               ],
