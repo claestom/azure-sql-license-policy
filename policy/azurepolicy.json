@@ -258,7 +258,7 @@
               "functions": [],
               "variables": {
                 "vmExtensionPublisher": "Microsoft.AzureData",
-                "cleanedSettings": "[if(contains(parameters('existingSettings'), 'ConsentToRecurringPAYG'), removeProperty(parameters('existingSettings'), 'ConsentToRecurringPAYG'), parameters('existingSettings'))]",
+                "cleanedSettings": "[if(contains(parameters('existingSettings'), 'ConsentToRecurringPAYG'), toObject(filter(items(parameters('existingSettings')), lambda('i', not(equals(lambdaVariables('i').key, 'ConsentToRecurringPAYG')))), lambda('i', lambdaVariables('i').key), lambda('i', lambdaVariables('i').value)), parameters('existingSettings'))]",
                 "baseSettings": {
                   "LicenseType": "[parameters('targetLicenseType')]"
                 },
