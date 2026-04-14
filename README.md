@@ -1,5 +1,7 @@
 # Arc-enabled SQL Server license type configuration with Azure Policy
 
+> **This solution is also available in the official Microsoft repository:** [microsoft/sql-server-samples](https://github.com/microsoft/sql-server-samples/tree/master/samples/manage/azure-arc-enabled-sql-server/compliance/arc-sql-license-type-compliance)
+
 This repo deploys and remediates a custom Azure Policy that configures and enforces Arc-enabled SQL Server extension `LicenseType` to a selected target value (for example `Paid` or `PAYG`).
 
 ## What Is In This Repo
