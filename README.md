@@ -8,6 +8,8 @@ This repo contains custom Azure Policy solutions to configure and enforce the `L
 |---|---|---|
 | [`sql-arc/`](sql-arc/) | Arc-enabled SQL Server | Configures and enforces `LicenseType` on the Arc-enabled SQL Server extension (`Microsoft.HybridCompute/machines/extensions`). |
 | [`sql-mi/`](sql-mi/) | SQL Managed Instance | Configures and enforces `LicenseType` on Azure SQL Managed Instances (`Microsoft.Sql/managedInstances`). |
+| [`sql-iaas/`](sql-iaas/) | SQL Server on Azure VMs | Configures and enforces `sqlServerLicenseType` on SQL Server on Azure Virtual Machines (`Microsoft.SqlVirtualMachine/sqlVirtualMachines`). |
+| [`sql-paas/`](sql-paas/) | Azure SQL Database | Configures and enforces `licenseType` on Azure SQL Databases (`Microsoft.Sql/servers/databases`). |
 
 ## Prerequisites
 
