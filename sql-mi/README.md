@@ -19,6 +19,15 @@ The policy uses logical license type values that map to API properties:
 | `BasePrice` | Azure Hybrid Benefit | `BasePrice` | `Active` |
 | `HybridFailoverRights` | Hybrid failover rights | `BasePrice` | `Passive` |
 
+## Licensing Conditions
+
+When selecting certain license types, ensure you meet the licensing requirements:
+
+- **Azure Hybrid Benefit** (`BasePrice`): *"I confirm that I have a SQL Server License with Software Assurance to apply this Azure Hybrid Benefit for SQL Server."*
+- **Hybrid failover rights** (`HybridFailoverRights`): *"I confirm that I will use this Managed Instance as a passive replica of SQL Server(s) for which I have a SQL Server license with Software Assurance, or for which I use Pay-as-you-go billing option."*
+
+The deployment script will prompt for confirmation when targeting `BasePrice` or `HybridFailoverRights`. Use `-SkipLicenseConfirmation` to suppress the prompt in automated pipelines (the operator assumes responsibility for license compliance).
+
 ## Prerequisites
 
 - PowerShell with Az modules installed (`Az.Resources`).
@@ -35,6 +44,7 @@ Parameter reference:
 | `SubscriptionId` | No | Not set | Any valid subscription ID | If provided, policy assignment scope is the subscription. |
 | `TargetLicenseType` | Yes | N/A | `LicenseIncluded`, `BasePrice`, `HybridFailoverRights` | Target license type to enforce. |
 | `LicenseTypesToOverwrite` | No | All | `LicenseIncluded`, `BasePrice`, `HybridFailoverRights` | Select which current license states are eligible for update. |
+| `SkipLicenseConfirmation` | No | `false` | Switch (`present`/`not present`) | Skip the interactive license confirmation prompt (for CI/CD pipelines). |
 
 Definition and assignment creation:
 

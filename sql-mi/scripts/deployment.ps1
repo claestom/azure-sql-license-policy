@@ -16,8 +16,26 @@ param(
   [string[]]$LicenseTypesToOverwrite = @('LicenseIncluded', 'BasePrice', 'HybridFailoverRights'),
 
   [Parameter(Mandatory = $false)]
-  [switch]$SkipManagedIdentityRoleAssignment
+  [switch]$SkipManagedIdentityRoleAssignment,
+
+  [Parameter(Mandatory = $false)]
+  [switch]$SkipLicenseConfirmation
 )
+
+$LicenseConfirmations = @{
+  'BasePrice'            = "I confirm that I have a SQL Server License with Software Assurance to apply this Azure Hybrid Benefit for SQL Server."
+  'HybridFailoverRights' = "I confirm that I will use this Managed Instance as a passive replica of SQL Server(s) for which I have a SQL Server license with Software Assurance, or for which I use Pay-as-you-go billing option."
+}
+
+if (-not $SkipLicenseConfirmation -and $LicenseConfirmations.ContainsKey($TargetLicenseType)) {
+  $confirmationMessage = $LicenseConfirmations[$TargetLicenseType]
+  Write-Host "`n$confirmationMessage" -ForegroundColor Yellow
+  $response = Read-Host "Do you agree? (Y/N)"
+  if ($response -notin @('Y', 'y', 'Yes', 'yes')) {
+    Write-Output "Deployment cancelled. License confirmation was not accepted."
+    return
+  }
+}
 
 if (-not $PSBoundParameters.ContainsKey('ManagementGroupId')) {
   $ManagementGroupId = (Get-AzContext).Tenant.Id
