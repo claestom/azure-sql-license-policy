@@ -50,7 +50,7 @@
           "/providers/Microsoft.Authorization/roleDefinitions/9b7fa17d-e63e-47b0-bb0a-15c516ac86ec",
           "/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7"
         ],
-        "name": "[field('name')]",
+        "name": "[field('fullName')]",
         "existenceCondition": {
           "field": "Microsoft.Sql/servers/databases/licenseType",
           "equals": "[parameters('targetLicenseType')]"
