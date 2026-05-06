@@ -55,7 +55,7 @@ cd sa-sql-iaas-policy
 ```
 
 ```powershell
-$baseUrl = "https://raw.githubusercontent.com/claestom/sql-arc-policy-license-config/main/sql-iaas"
+$baseUrl = "https://raw.githubusercontent.com/claestom/azure-sql-license-policy/main/sql-iaas"
 
 New-Item -ItemType Directory -Path policy, scripts -Force | Out-Null
 

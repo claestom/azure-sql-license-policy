@@ -40,7 +40,7 @@ cd sa-sql-arc-policy
 ```
 
 ```powershell
-$baseUrl = "https://raw.githubusercontent.com/claestom/sql-arc-policy-license-config/main/sql-arc"
+$baseUrl = "https://raw.githubusercontent.com/claestom/azure-sql-license-policy/main/sql-arc"
 
 New-Item -ItemType Directory -Path policy, scripts -Force | Out-Null
 

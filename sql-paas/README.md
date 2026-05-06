@@ -16,6 +16,8 @@ This solution deploys and remediates a custom Azure Policy that configures and e
 | `LicenseIncluded` | Pay-as-you-go | `LicenseIncluded` |
 | `BasePrice` | Azure Hybrid Benefit | `BasePrice` |
 
+> **Note:** License type configuration is only available for databases using the **Provisioned** compute tier. Databases configured with the **Serverless** compute tier do not support the `licenseType` property. These databases will be flagged as non-compliant by the policy, but remediation cannot change the license type. To configure the license type, switch the database to the Provisioned compute tier.
+
 ## Licensing Conditions
 
 When selecting Azure Hybrid Benefit, ensure you meet the licensing requirements:
@@ -52,7 +54,7 @@ cd sa-sql-paas-policy
 ```
 
 ```powershell
-$baseUrl = "https://raw.githubusercontent.com/claestom/sql-arc-policy-license-config/main/sql-paas"
+$baseUrl = "https://raw.githubusercontent.com/claestom/azure-sql-license-policy/main/sql-paas"
 
 New-Item -ItemType Directory -Path policy, scripts -Force | Out-Null
 

@@ -11,8 +11,8 @@ This repo is intentionally lightweight, so contributions should stay practical: 
 3. Create a branch for your change.
 
 ```powershell
-git clone https://github.com/<your-user>/sql-arc-policy-license-config.git
-cd sql-arc-policy-license-config
+git clone https://github.com/<your-user>/azure-sql-license-policy.git
+cd azure-sql-license-policy
 git checkout -b feat/<short-description>
 ```
 

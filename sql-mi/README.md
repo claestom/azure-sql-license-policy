@@ -57,7 +57,7 @@ cd sa-sql-mi-policy
 ```
 
 ```powershell
-$baseUrl = "https://raw.githubusercontent.com/claestom/sql-arc-policy-license-config/main/sql-mi"
+$baseUrl = "https://raw.githubusercontent.com/claestom/azure-sql-license-policy/main/sql-mi"
 
 New-Item -ItemType Directory -Path policy, scripts -Force | Out-Null
 
