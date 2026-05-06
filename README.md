@@ -20,3 +20,11 @@ This repo contains custom Azure Policy solutions to configure and enforce the `L
 ## Getting Started
 
 Navigate to the relevant subfolder for your resource type and follow the README instructions there.
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
