@@ -10,6 +10,7 @@ This repo contains custom Azure Policy solutions to configure and enforce the `L
 | [`sql-mi/`](sql-mi/) | SQL Managed Instance | Configures and enforces `LicenseType` on Azure SQL Managed Instances (`Microsoft.Sql/managedInstances`). |
 | [`sql-iaas/`](sql-iaas/) | SQL Server on Azure VMs | Configures and enforces `sqlServerLicenseType` on SQL Server on Azure Virtual Machines (`Microsoft.SqlVirtualMachine/sqlVirtualMachines`). |
 | [`sql-paas/`](sql-paas/) | Azure SQL Database | Configures and enforces `licenseType` on Azure SQL Databases (`Microsoft.Sql/servers/databases`). |
+| [`sql-ssis/`](sql-ssis/) | ADF SSIS Integration Runtime | Audits `licenseType` on Azure Data Factory Managed SSIS Integration Runtimes (`Microsoft.DataFactory/factories/integrationRuntimes`); remediates out-of-band via `Set-AzDataFactoryV2IntegrationRuntime`. |
 
 ## Prerequisites
 

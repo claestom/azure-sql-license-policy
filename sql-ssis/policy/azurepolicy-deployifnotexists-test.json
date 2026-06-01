@@ -1,0 +1,218 @@
+{
+  "displayName": "[TEST] Configure Azure Data Factory SSIS Integration Runtime license type (DeployIfNotExists)",
+  "policyType": "Custom",
+  "mode": "All",
+  "description": "EXPERIMENTAL / TEST ONLY. Attempts to enforce licenseType on Managed SSIS Integration Runtimes via DeployIfNotExists. NOTE: The Azure-SSIS IR must be Stopped to be reconfigured (https://learn.microsoft.com/azure/data-factory/manage-azure-ssis-integration-runtime) and the ARM PUT body uses the discriminated-union typeProperties (https://learn.microsoft.com/rest/api/datafactory/integration-runtimes/create-or-update). This template reconstructs the IR body from the available policy aliases (computeProperties.location/nodeSize/numberOfNodes/maxParallelExecutionsPerNode, ssisProperties.licenseType/edition). Use the companion start-remediation.ps1 (which wraps Set-AzDataFactoryV2IntegrationRuntime) for the supported path. The main azurepolicy.json (AuditIfNotExists) remains the production policy.",
+  "metadata": {
+    "category": ""
+  },
+  "parameters": {
+    "effect": {
+      "type": "String",
+      "metadata": {
+        "displayName": "Effect",
+        "description": "Enable or disable the execution of the policy."
+      },
+      "allowedValues": [
+        "DeployIfNotExists",
+        "Disabled"
+      ],
+      "defaultValue": "DeployIfNotExists"
+    },
+    "targetLicenseType": {
+      "type": "String",
+      "metadata": {
+        "displayName": "Target license type",
+        "description": "License type to enforce on the SSIS Integration Runtime. LicenseIncluded = Pay-as-you-go, BasePrice = Azure Hybrid Benefit."
+      },
+      "allowedValues": [
+        "LicenseIncluded",
+        "BasePrice"
+      ],
+      "defaultValue": "LicenseIncluded"
+    },
+    "licenseTypesToOverwrite": {
+      "type": "Array",
+      "metadata": {
+        "displayName": "Current license types to overwrite",
+        "description": "Select which current license type states are eligible for update."
+      },
+      "allowedValues": [
+        "LicenseIncluded",
+        "BasePrice"
+      ],
+      "defaultValue": [
+        "LicenseIncluded",
+        "BasePrice"
+      ]
+    }
+  },
+  "policyRule": {
+    "if": {
+      "allOf": [
+        {
+          "field": "type",
+          "equals": "Microsoft.DataFactory/factories/integrationRuntimes"
+        },
+        {
+          "field": "Microsoft.DataFactory/factories/integrationruntimes/type",
+          "equals": "Managed"
+        },
+        {
+          "field": "Microsoft.DataFactory/factories/integrationRuntimes/Managed.typeProperties.ssisProperties.licenseType",
+          "exists": "true"
+        }
+      ]
+    },
+    "then": {
+      "effect": "[parameters('effect')]",
+      "details": {
+        "type": "Microsoft.DataFactory/factories/integrationRuntimes",
+        "roleDefinitionIds": [
+          "/providers/Microsoft.Authorization/roleDefinitions/673868aa-7521-48a0-acc6-0f60742d39f5",
+          "/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7"
+        ],
+        "name": "[field('fullName')]",
+        "existenceCondition": {
+          "anyOf": [
+            {
+              "field": "Microsoft.DataFactory/factories/integrationRuntimes/Managed.typeProperties.ssisProperties.licenseType",
+              "equals": "[parameters('targetLicenseType')]"
+            },
+            {
+              "allOf": [
+                {
+                  "field": "Microsoft.DataFactory/factories/integrationRuntimes/Managed.typeProperties.ssisProperties.licenseType",
+                  "equals": "LicenseIncluded"
+                },
+                {
+                  "value": "[contains(parameters('licenseTypesToOverwrite'), 'LicenseIncluded')]",
+                  "equals": false
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "field": "Microsoft.DataFactory/factories/integrationRuntimes/Managed.typeProperties.ssisProperties.licenseType",
+                  "equals": "BasePrice"
+                },
+                {
+                  "value": "[contains(parameters('licenseTypesToOverwrite'), 'BasePrice')]",
+                  "equals": false
+                }
+              ]
+            }
+          ]
+        },
+        "evaluationDelay": "AfterProvisioningSuccess",
+        "deployment": {
+          "properties": {
+            "mode": "incremental",
+            "template": {
+              "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+              "contentVersion": "1.0.0.0",
+              "parameters": {
+                "integrationRuntimeFullName": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Full child name in the form '<factoryName>/<integrationRuntimeName>'."
+                  }
+                },
+                "irLocation": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Location of the Managed SSIS Integration Runtime (typeProperties.computeProperties.location)."
+                  }
+                },
+                "nodeSize": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Existing node size."
+                  }
+                },
+                "numberOfNodes": {
+                  "type": "int",
+                  "metadata": {
+                    "description": "Existing number of nodes."
+                  }
+                },
+                "maxParallelExecutionsPerNode": {
+                  "type": "int",
+                  "defaultValue": 0,
+                  "metadata": {
+                    "description": "Existing maxParallelExecutionsPerNode. 0 = unset (omitted from body)."
+                  }
+                },
+                "edition": {
+                  "type": "string",
+                  "defaultValue": "",
+                  "metadata": {
+                    "description": "Existing SSIS edition (Standard | Enterprise). Empty = unset (omitted from body)."
+                  }
+                },
+                "targetLicenseType": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Target SSIS licenseType (LicenseIncluded | BasePrice)."
+                  }
+                }
+              },
+              "functions": [],
+              "variables": {
+                "computePropertiesBase": {
+                  "location": "[parameters('irLocation')]",
+                  "nodeSize": "[parameters('nodeSize')]",
+                  "numberOfNodes": "[parameters('numberOfNodes')]"
+                },
+                "computeProperties": "[if(greater(parameters('maxParallelExecutionsPerNode'), 0), union(variables('computePropertiesBase'), createObject('maxParallelExecutionsPerNode', parameters('maxParallelExecutionsPerNode'))), variables('computePropertiesBase'))]",
+                "ssisPropertiesBase": {
+                  "licenseType": "[parameters('targetLicenseType')]"
+                },
+                "ssisProperties": "[if(empty(parameters('edition')), variables('ssisPropertiesBase'), union(variables('ssisPropertiesBase'), createObject('edition', parameters('edition'))))]"
+              },
+              "resources": [
+                {
+                  "type": "Microsoft.DataFactory/factories/integrationRuntimes",
+                  "apiVersion": "2018-06-01",
+                  "name": "[parameters('integrationRuntimeFullName')]",
+                  "properties": {
+                    "type": "Managed",
+                    "typeProperties": {
+                      "computeProperties": "[variables('computeProperties')]",
+                      "ssisProperties": "[variables('ssisProperties')]"
+                    }
+                  }
+                }
+              ],
+              "outputs": {}
+            },
+            "parameters": {
+              "integrationRuntimeFullName": {
+                "value": "[field('fullName')]"
+              },
+              "irLocation": {
+                "value": "[field('Microsoft.DataFactory/factories/integrationRuntimes/Managed.typeProperties.computeProperties.location')]"
+              },
+              "nodeSize": {
+                "value": "[field('Microsoft.DataFactory/factories/integrationRuntimes/Managed.typeProperties.computeProperties.nodeSize')]"
+              },
+              "numberOfNodes": {
+                "value": "[field('Microsoft.DataFactory/factories/integrationRuntimes/Managed.typeProperties.computeProperties.numberOfNodes')]"
+              },
+              "maxParallelExecutionsPerNode": {
+                "value": "[coalesce(field('Microsoft.DataFactory/factories/integrationRuntimes/Managed.typeProperties.computeProperties.maxParallelExecutionsPerNode'), 0)]"
+              },
+              "edition": {
+                "value": "[coalesce(field('Microsoft.DataFactory/factories/integrationRuntimes/Managed.typeProperties.ssisProperties.edition'), '')]"
+              },
+              "targetLicenseType": {
+                "value": "[parameters('targetLicenseType')]"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
