@@ -2,9 +2,11 @@
   "displayName": "Audit Azure Data Factory SSIS Integration Runtime license type",
   "policyType": "Custom",
   "mode": "All",
-  "description": "This policy audits Azure Data Factory Managed SSIS Integration Runtimes whose licenseType does not match a specified target value. SSIS IR uses the same SQL Server licensing model as other SQL workloads (BasePrice = Azure Hybrid Benefit, LicenseIncluded = Pay-as-you-go). Remediation is performed via the companion start-remediation.ps1 script (see README) because the underlying ARM CreateOrUpdate operation on the integrationRuntime would replace the discriminated-union typeProperties block.",
+  "description": "Audits Azure Data Factory Managed SSIS Integration Runtimes whose licenseType does not match the target value (LicenseIncluded = PAYG, BasePrice = Azure Hybrid Benefit). Remediate non-compliant IRs by running start-remediation.ps1 (see metadata.helpLink) during a maintenance window: stop the IR, set licenseType, restart. DeployIfNotExists is not supported because the ARM PUT requires the IR to be in Initial or Stopped state.",
   "metadata": {
-    "category": ""
+    "category": "Data Factory",
+    "helpLink": "https://github.com/claestom/azure-sql-license-policy/blob/main/sql-ssis/scripts/start-remediation.ps1",
+    "source": "https://github.com/claestom/azure-sql-license-policy/tree/main/sql-ssis"
   },
   "parameters": {
     "effect": {

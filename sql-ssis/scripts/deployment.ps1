@@ -67,10 +67,14 @@ New-AzPolicyDefinition `
   -DisplayName $PolicyDefinitionDisplayName `
   -Policy $PolicyJsonPath `
   -ManagementGroupName $ManagementGroupId `
-  -Mode Indexed `
+  -Mode All `
   -ErrorAction Stop
 
 #Assign policy definition
+$RemediationScriptUrl = 'https://github.com/claestom/azure-sql-license-policy/blob/main/sql-ssis/scripts/start-remediation.ps1'
+
+$NonComplianceMessageText = "SSIS Integration Runtime licenseType is not '$TargetLicenseType' ($LicenseTypeLabel). Remediate by running start-remediation.ps1 during a maintenance window (IR will be briefly stopped, reconfigured, then started). DeployIfNotExists is not supported (ARM PUT requires Initial/Stopped state). Script: $RemediationScriptUrl"
+
 $Policy = Get-AzPolicyDefinition -Name $PolicyDefinitionName -ManagementGroupName $ManagementGroupId
 New-AzPolicyAssignment `
   -Name $PolicyAssignmentName `
@@ -83,7 +87,7 @@ New-AzPolicyAssignment `
   -Scope $AssignmentScope `
   -NonComplianceMessage @(
     @{
-      Message = "The Azure Data Factory SSIS Integration Runtime license type is not set to '$LicenseTypeLabel'. Run scripts/start-remediation.ps1 to remediate (the underlying ARM operation requires a full IR body merge, which the script performs via Set-AzDataFactoryV2IntegrationRuntime)."
+      Message = $NonComplianceMessageText
     }
   ) `
   -ErrorAction Stop
